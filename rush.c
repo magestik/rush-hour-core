@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "level.h"
+
 #ifdef INTERFACE_CONSOLE
 	#include "console.h"
 #endif
@@ -13,29 +15,27 @@
 	#include "graphique.h"
 #endif
 
-#include "level.h"
-
 t_parking *parking_actuel;
+
 int nb_coups;
 
 /*
- * Renvoie un tableau d entiers representant l'occupation du parking
+ * Renvoie un tableau d'entiers representant l'occupation du parking
  * si case vide : 0
  * si case occupée : numero du véhicule
  */
-
-int * tab_positions(t_parking parking) {
+int *tab_positions(t_parking parking) {
 	int i;
 	int * tableau = malloc(sizeof(int) * HEIGHT * WIDTH);
 
-	for (i = 0; i < HEIGHT * WIDTH; i++){
+	for (i = 0; i < HEIGHT * WIDTH; i++) {
 		tableau[i] = 0;
 	}
 
-	for (i=0; i<parking.nb_vehicules; i++) {
+	for (i = 0; i < parking.nb_vehicules; i++) {
 		// numerotation de la case reference.
 		tableau[parking.position[i].ord*6+parking.position[i].abs] = 1+i;
-		// numerotation de la case suivante en fonction de l axe
+		// numerotation de la case suivante en fonction de l'axe
 		tableau[(parking.position[i].ord+parking.vehicule[i].axe)*6+parking.position[i].abs+1-parking.vehicule[i].axe] = 1+i;
 		// numerotation de la case suivante OU de la 2e case qui suit en fonction de la taille
 		tableau[(parking.position[i].ord+(parking.vehicule[i].taille-1)*parking.vehicule[i].axe)*6+parking.position[i].abs+(parking.vehicule[i].taille-1)*(1-parking.vehicule[i].axe)] = 1+i;
@@ -49,8 +49,7 @@ int * tab_positions(t_parking parking) {
  * 1 si mouvement impossible
  * 0 si mouvement possible
  */
-
-int mvt_impossible(int mvt, int num_vehicule, t_parking parking){
+int is_move_possible(int mvt, int num_vehicule, t_parking parking){
 	int * cases_occ = tab_positions(parking);
 
 	int newAbs;
@@ -80,7 +79,7 @@ int mvt_impossible(int mvt, int num_vehicule, t_parking parking){
 		return 1;
 	}
 
-	// On vérifie si la case la plus en haut ,ou la plus à gauche, est occupée
+	// On vérifie si la case la plus en haut, ou la plus à gauche, est occupée
 	if ( mvt == 1 && cases_occ[newOrd*6 + newAbs] != 0 ){
 		return 1;
 	}
@@ -96,13 +95,15 @@ int mvt_impossible(int mvt, int num_vehicule, t_parking parking){
 /*
  * Modifie le parking en effectuant le mouvement MVT au vehicule numero NUM_VEHICULE
  */
-
-void bouger(int mvt, int num_vehicule, t_parking parking) {
+void move(int mvt, int num_vehicule, t_parking parking) {
 	parking.position[num_vehicule].abs += (1 - parking.vehicule[num_vehicule].axe)*mvt;
 	parking.position[num_vehicule].ord += parking.vehicule[num_vehicule].axe*mvt;
 }
 
-void configuration_next() {
+/*
+ * Charge le prochain niveau du fichier
+ */
+void load_next_level() {
 	free(parking_actuel->vehicule);
 	free(parking_actuel->position);
 	free(parking_actuel);
@@ -110,13 +111,16 @@ void configuration_next() {
 	parking_actuel = read_level_file();
 }
 
+/*
+ * Affiche un petit message d'aide sur l'utilisation et quitte
+ */
 void usage(char *argv0) {
 	printf("Usage:\n");
 	printf("%s [-l <level file>]\n", argv0);
 	exit(1);
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char *argv[]) {
 
 	if( argc > 1 ) {
 		if( argc != 3 || strcmp(argv[1], "-l") ){

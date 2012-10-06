@@ -34,7 +34,6 @@ double microtime(void) {
 	return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
-
 void creer_plateau() {
 	id_plateau = glGenLists(1);
 	glNewList(id_plateau, GL_COMPILE);
@@ -250,7 +249,7 @@ void draw() {
 void graphique_resolution() {
 	int k = resolution - 1;
 
-	bouger(2*chemin[k].deplacement-1, chemin[k].voiture, *parking_actuel);
+	move(2*chemin[k].deplacement-1, chemin[k].voiture, *parking_actuel);
 	nb_coups++;
 
 	if (chemin[k].deplacement == -1 && chemin[k].voiture == -1) {
@@ -276,7 +275,7 @@ void graphique_menu(int choix) {
 		break;
 
 		case 3:
-			configuration_next();
+			load_next_level();
 		break;
 	}
 
@@ -334,7 +333,7 @@ void special(int key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void graphique_init (int argc, char ** argv) {
+void graphique_init(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // | GLUT_STEREO
 	glutInitWindowSize(640, 480);

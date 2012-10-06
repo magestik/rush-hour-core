@@ -26,7 +26,7 @@ void console_init() {
 			break;
 
 			case 3:
-				configuration_next();
+				load_next_level();
 				menu = 1;
 			break;
 		}
@@ -34,7 +34,7 @@ void console_init() {
 		if( menu ){
 			if ( menu == 4 ) {
 				//parking_actuel = configuration_load(niveau);
-				configuration_next();
+				load_next_level();
 			}
 			console_affiche(*parking_actuel);
 			reponse = console_menu(menu);
@@ -56,12 +56,12 @@ int console_resolution(t_parking parking) {
 
 	chemin = solution(parking);
 
-	for (k=0; k<c; k++) {
+	for (k = 0; k < c; k++) {
 		//ici je teste les 2 (== -1) pour ne pas tomber sur l'initialisation.
 		if (chemin[k+1].deplacement==-1 && chemin[k+1].voiture==-1) {
 			return 4;
 		} else {
-			bouger(2*chemin[k].deplacement-1, chemin[k].voiture, parking);
+			move(2*chemin[k].deplacement-1, chemin[k].voiture, parking);
 			nb_coups++;
 
 			console_affiche(parking);
@@ -98,7 +98,7 @@ int console_jouer(t_parking parking) {
 	  		break;
 
 			case 19:
-				configuration_next(); //autre grille
+				load_next_level(); //autre grille
 				return 1;
 	  		break;
 
@@ -108,7 +108,7 @@ int console_jouer(t_parking parking) {
 
 			default:
 				num_vehicule = reponse-1;
-				while(num_vehicule >= parking.nb_vehicules || (mvt_impossible(1, num_vehicule, parking) && mvt_impossible(2, num_vehicule, parking)) ) {
+				while(num_vehicule >= parking.nb_vehicules || (is_move_possible(1, num_vehicule, parking) && is_move_possible(2, num_vehicule, parking)) ) {
 					printf("\nNumero de vehicule non valide \n");
 					scanf("%d",&reponse);
 					scanf("%*[^\ns]");
@@ -119,13 +119,13 @@ int console_jouer(t_parking parking) {
 
 		console_affiche(parking);
 		reponse = console_menu(3);
-		while ( mvt_impossible(reponse, num_vehicule, parking) ) {
+		while ( is_move_possible(reponse, num_vehicule, parking) ) {
 		    console_affiche(parking);
 		    printf("\t\t(\033[1;31m mouvement impossible \033[0m) \n");
 		    reponse = console_menu(3);
 		}
 
-		bouger(2*(reponse-1)-1, num_vehicule, parking);
+		move(2*(reponse-1)-1, num_vehicule, parking);
 		nb_coups++;
 
 		// condition de victoire
