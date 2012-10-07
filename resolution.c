@@ -189,7 +189,7 @@ t_chemin solution(t_parking  parking){
 						aux->suivant->config.position[k].ord = file->config.position[k].ord;
 					}
 
-					if (!mvt_impossible(j+1, i, aux->suivant->config)) {
+					if (!is_move_possible(j+1, i, aux->suivant->config)) {
 						/* remarque perso 1/2 :
 						 * ici on utilise "j+1" car j varie entre 0 et 1
 						 * et MVT_IMPOSSIBLE prend un mouvement = 1 ou 2
