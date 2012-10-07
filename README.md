@@ -3,8 +3,9 @@ Rush Hour
 
 Rush Hour game in OpenGL.
 
-That was one of the best project I did at University with Hoare.
+I made this game at University with Hoare.
 
+After some improvements I'll try to add Stereoscopic rendering.
 
 Requirements
 =========

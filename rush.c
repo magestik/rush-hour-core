@@ -24,9 +24,8 @@ int nb_coups;
  * si case vide : 0
  * si case occupée : numero du véhicule
  */
-int *tab_positions(t_parking parking) {
+void get_parking_occupation(t_parking parking, int *tableau) {
 	int i;
-	int * tableau = malloc(sizeof(int) * HEIGHT * WIDTH);
 
 	for (i = 0; i < HEIGHT * WIDTH; i++) {
 		tableau[i] = 0;
@@ -50,7 +49,9 @@ int *tab_positions(t_parking parking) {
  * 0 si mouvement possible
  */
 int is_move_possible(int mvt, int num_vehicule, t_parking parking){
-	int * cases_occ = tab_positions(parking);
+	int cases_occ[HEIGHT * WIDTH];
+
+	get_parking_occupation(parking, cases_occ);
 
 	int newAbs;
 	int newOrd;
@@ -104,8 +105,8 @@ void move(int mvt, int num_vehicule, t_parking parking) {
  * Charge le prochain niveau du fichier
  */
 void load_next_level() {
-	free(parking_actuel->vehicule);
-	free(parking_actuel->position);
+	//free(parking_actuel->vehicule);
+	//free(parking_actuel->position);
 	free(parking_actuel);
 
 	parking_actuel = read_level_file();

@@ -7,71 +7,39 @@
 #include "resolution.h"
 
 void console_init() {
-	int menu = 1;
-	int reponse = -1;
 
-	console_affiche(*parking_actuel);
-
-	reponse = console_menu(menu);
-
-	while ( reponse ) {
-
-		switch ( reponse ) {
-			case 1:
-				menu = console_jouer(*parking_actuel);
-			break;
-
-			case 2:
-				menu = console_resolution(*parking_actuel);
-			break;
-
-			case 3:
-				load_next_level();
-				menu = 1;
-			break;
-		}
-
-		if( menu ){
-			if ( menu == 4 ) {
-				//parking_actuel = configuration_load(niveau);
-				load_next_level();
-			}
-			console_affiche(*parking_actuel);
-			reponse = console_menu(menu);
-		} else {
-			reponse = 0;
-		}
+	while ( console_jouer(*parking_actuel) ) {
+		load_next_level();
 	}
 }
 
 int console_resolution(t_parking parking) {
 	t_chemin chemin;
-	int k, c;
+	int k = 1;
 	char pause;
-
-	printf("\nCombien de coups souhaitez-vous voir ?\n");
-	scanf("%d", &c);
-	scanf("%*[^\ns]");
-	getchar();
 
 	chemin = solution(parking);
 
-	for (k = 0; k < c; k++) {
-		//ici je teste les 2 (== -1) pour ne pas tomber sur l'initialisation.
-		if (chemin[k+1].deplacement==-1 && chemin[k+1].voiture==-1) {
-			return 4;
-		} else {
-			move(2*chemin[k].deplacement-1, chemin[k].voiture, parking);
-			nb_coups++;
+	while( chemin[k].deplacement != -1 && chemin[k].voiture != -1 ){
 
-			console_affiche(parking);
+		move(2*chemin[k].deplacement-1, chemin[k].voiture, parking);
+		nb_coups++;
 
-			printf("\nVoiture n°%d, mouvement %d",chemin[k].voiture+1,chemin[k].deplacement);
-			printf("\t(appuyez sur une touche pour continuer)");
+		console_affiche(parking);
 
-			scanf("%c", &pause);
-		}
+		printf("\nVoiture n°%d, mouvement %d", chemin[k].voiture+1, chemin[k].deplacement);
+		printf("\t(appuyez sur une touche pour continuer)");
+		scanf("%c", &pause);
+
+		k++;
 	}
+
+	nb_coups++;
+	console_affiche(parking);
+
+	printf("\tRésolution en %d mouvements", chemin[k].deplacement);
+	printf("\t(appuyez sur une touche pour continuer)");
+	scanf("%c", &pause);
 
 	return 5;
 }
@@ -85,20 +53,13 @@ int console_jouer(t_parking parking) {
 		reponse = console_menu(2);
 
 		switch( reponse ) {
-			case 17: //resolution auto
-				if (console_resolution(parking)) {
-					return 4;
-				} else {
-					return 5;
-				}
+
+			case 17:
+				console_resolution(parking);
+				return 1;
 			break;
 
 			case 18:
-				return 1;
-	  		break;
-
-			case 19:
-				load_next_level(); //autre grille
 				return 1;
 	  		break;
 
@@ -109,8 +70,8 @@ int console_jouer(t_parking parking) {
 			default:
 				num_vehicule = reponse-1;
 				while(num_vehicule >= parking.nb_vehicules || (is_move_possible(1, num_vehicule, parking) && is_move_possible(2, num_vehicule, parking)) ) {
-					printf("\nNumero de vehicule non valide \n");
-					scanf("%d",&reponse);
+					printf("\nNumero de vehicule non valide ou vehicule bloqué\n");
+					scanf("%d", &reponse);
 					scanf("%*[^\ns]");
 					getchar();
 					num_vehicule = reponse-1;
@@ -129,8 +90,8 @@ int console_jouer(t_parking parking) {
 		nb_coups++;
 
 		// condition de victoire
-		if (parking.position[0].abs+1 > 5 && parking.position[0].ord == 2) { //condition sur abscisse suffisante, non ?
-			return 4;
+		if ( parking.position[0].abs + 1 > 5 && parking.position[0].ord == 2 ) { // condition sur abscisse suffisante, non ?
+			return 1;
 		}
 	}
 
@@ -141,13 +102,17 @@ int console_jouer(t_parking parking) {
 
 int coups(t_parking parking){
 	int compteur = 0;
+
 	t_chemin chemin = solution(parking);
-	while (chemin->voiture!=-1) {
+
+	while (chemin->voiture != -1) {
 		compteur++;
-		chemin=chemin+1;
+		chemin++;
 	}
+
 	return compteur;
 }
+
 /************************  Affichage des Menus  *****************************/
 
 int console_menu(int choix_menu) {
@@ -156,41 +121,15 @@ int console_menu(int choix_menu) {
 	printf("\n\n******  MENU  ******\n");
 
 	switch (choix_menu) {
-		case 1:
-    		printf("- pour commencer la partie, tapez 1");
-    		printf("  (nombre  de coups minimums : %d)\n", coups(*parking_actuel));
-    		printf("- pour visualiser une solution pour cette partie, tapez 2\n");
-    		printf("- pour charger une autre grille, tapez 3\n");
-    		printf("- pour sortir du jeu, tapez 0\n");
-		break;
-
     	case 2:
     		printf("- indiquez le numéro du vehicule à déplacer\n");
     		printf("- pour visualiser une solution, tapez 17\n");
-			printf("- pour recommencer cette partie, tapez 18\n");
-    		printf("- pour démarrer une autre grille, tapez 19\n");
+    		printf("- pour démarrer une autre grille, tapez 18\n");
 			printf("- pour sortir du jeu, tapez 0\n");
    		break;
 
 		case 3:
 			printf("Quel deplacement souhaitez-vous effectuer ?\n");
-		break;
-
-		case 4:
-			nb_coups++;
-			gagner();
-			nb_coups=0;
-			printf("- pour recommencer la partie, tapez 1\n");
-			printf("- pour visualiser une solution pour cette partie, tapez 2\n");
-			printf("- pour charger une autre grille, tapez 3\n");
-			printf("- pour sortir du jeu, tapez 0\n");
-		break;
-
-		case 5:
-			printf("- pour continuer la partie, tapez 1\n");
-			printf("- pour visualiser la suite de la solution pour cette partie, tapez 2\n");
-			printf("- pour charger une autre grille, tapez 3\n");
-			printf("- pour sortir du jeu, tapez 0\n");
 		break;
 	}
 
@@ -205,7 +144,9 @@ int console_menu(int choix_menu) {
 
 void console_affiche(t_parking parking) {
 	int i, j, n;
-	int * parkingGUI = tab_positions(parking);
+
+	int parkingGUI[HEIGHT * WIDTH];
+	get_parking_occupation(parking, parkingGUI);
 
 	printf("\033[H\033[2J"); //clear
 	printf("\t\t    __________________ \n");
