@@ -1,13 +1,11 @@
-#include "rush.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
-#include "level.h"
+#include "rush.h"
 
-#include "graphique.h"
+#include "level.h"
 
 t_parking *parking_actuel;
 

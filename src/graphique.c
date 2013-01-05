@@ -174,45 +174,11 @@ void scene(){
 	int color;
 	glCallList(id_plateau); // cube 1
 
-	for (i=0; i<parking_actuel->nb_vehicules; i++) {
-		if ( i+1 < 9 ) {
-			color = i+1;
+	for (i = 0; i < parking_actuel->nb_vehicules; i++) {
+		if(i == 0) {
+			glColor3ub(255, 0, 0);
 		} else {
-			color = (i+2) % 8;
-		}
-
-		switch ( color ) {
-			case 1:
-				glColor3ub(255, 0, 0);
-			break;
-
-			case 2:
-				glColor3ub(0, 255, 0);
-			break;
-
-			case 3:
-				glColor3ub(255, 255, 0);
-			break;
-
-			case 4:
-				glColor3ub(0, 0, 255);
-			break;
-
-			case 5:
-				glColor3ub(255, 0, 255);
-			break;
-
-			case 6:
-				glColor3ub(0, 255, 255);
-			break;
-
-			case 7:
-				glColor3ub(200, 200, 200);
-			break;
-
-			case 8:
-				glColor3ub(50, 50, 50);
-			break;
+			glColor3ub((i*154)%255, (i*142)%255, (i*45)%255);
 		}
 
 		glPushMatrix();
@@ -262,29 +228,6 @@ void graphique_resolution() {
 	}
 }
 
-void graphique_menu(int choix) {
-	switch(choix){
-		case 0:
-			exit(0);
-		break;
-
-		case 1:
-			// TODO
-		break;
-
-		case 2:
-			resolution = 1;
-			chemin = solution(*parking_actuel);
-		break;
-
-		case 3:
-			load_next_level();
-		break;
-	}
-
-	glutPostRedisplay();
-}
-
 void idle() {
 	static double last_time = 0;
 
@@ -296,7 +239,7 @@ void idle() {
 		}
 	}
 
-    glutPostRedisplay(); // is this needed ?
+    glutPostRedisplay();
 }
 
 void reshape(int w, int h) {
@@ -310,6 +253,16 @@ void reshape(int w, int h) {
 
 void special(int key, int x, int y) {
 	switch(key) {
+		case GLUT_KEY_F1:
+			resolution = 1;
+			chemin = solution(*parking_actuel);
+		break;
+
+		case GLUT_KEY_F2:
+			resolution = 0;
+			load_next_level();
+		break;
+
 		case GLUT_KEY_LEFT:
 			printf("Gauche\n");
 			angle = (angle + 5) % 360;
@@ -366,13 +319,6 @@ int main(int argc, char *argv[]) {
     glutIdleFunc(idle);
     glutReshapeFunc(reshape);
     glutSpecialFunc(special);
-
-	glutCreateMenu(graphique_menu);
-	glutAddMenuEntry("Jouer", 1);
-	glutAddMenuEntry("Resoudre", 2);
-	glutAddMenuEntry("Changer", 3);
-	glutAddMenuEntry("Quitter", 0);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
     InitGL();
 	positionCamera();
