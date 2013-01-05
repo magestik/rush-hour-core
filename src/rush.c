@@ -7,13 +7,7 @@
 
 #include "level.h"
 
-#ifdef INTERFACE_CONSOLE
-	#include "console.h"
-#endif
-
-#ifdef INTERFACE_GRAPHIQUE
-	#include "graphique.h"
-#endif
+#include "graphique.h"
 
 t_parking *parking_actuel;
 
@@ -40,7 +34,7 @@ void get_parking_occupation(t_parking parking, int *tableau) {
 		tableau[(parking.position[i].ord+(parking.vehicule[i].taille-1)*parking.vehicule[i].axe)*6+parking.position[i].abs+(parking.vehicule[i].taille-1)*(1-parking.vehicule[i].axe)] = 1+i;
 	}
 
-	return tableau;
+	//return tableau;
 }
 
 /*
@@ -110,38 +104,4 @@ void load_next_level() {
 	free(parking_actuel);
 
 	parking_actuel = read_level_file();
-}
-
-/*
- * Affiche un petit message d'aide sur l'utilisation et quitte
- */
-void usage(char *argv0) {
-	printf("Usage:\n");
-	printf("%s [-l <level file>]\n", argv0);
-	exit(1);
-}
-
-int main(int argc, char *argv[]) {
-
-	if( argc > 1 ) {
-		if( argc != 3 || strcmp(argv[1], "-l") ){
-			usage(argv[0]);
-		}
-
-		init_level_file(argv[2]);
-	} else {
-		init_level_file("levels.data"); // default file name
-	}
-
-	#ifdef INTERFACE_CONSOLE
-		console_init();
-	#endif
-
-	#ifdef INTERFACE_GRAPHIQUE
-		graphique_init(argc, argv);
-	#endif
-
-	close_level_file();
-
-	return 0;
 }

@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <unistd.h>
+#include <string.h>
 #include <math.h>
+
 #include <sys/time.h>
 #include <sys/ioctl.h>
+
 #include <GL/glut.h>
 #include <GL/gl.h>
 
 #include "rush.h"
 #include "resolution.h"
+#include "level.h"
 
 /* Position de la caméra */
 int angle = 190;
@@ -333,7 +336,27 @@ void special(int key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void graphique_init(int argc, char **argv) {
+/*
+ * Affiche un petit message d'aide sur l'utilisation et quitte
+ */
+static void usage(char *argv0) {
+	printf("Usage:\n");
+	printf("%s [-l <level file>]\n", argv0);
+	exit(1);
+}
+
+int main(int argc, char *argv[]) {
+
+	if( argc > 1 ) {
+		if( argc != 3 || strcmp(argv[1], "-l") ){
+			usage(argv[0]);
+		}
+
+		init_level_file(argv[2]);
+	} else {
+		init_level_file("levels.data"); // default file name
+	}
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // | GLUT_STEREO
 	glutInitWindowSize(640, 480);
@@ -355,5 +378,7 @@ void graphique_init(int argc, char **argv) {
 	positionCamera();
 
     glutMainLoop();
+
+    return 0;
 }
 
