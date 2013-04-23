@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <cmath>
 
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -171,7 +170,6 @@ void positionCamera(){
 void scene(){
 	int i;
 	float x, y;
-	int color;
 	glCallList(id_plateau); // cube 1
 
 	for (i = 0; i < parking_actuel->nb_vehicules; i++) {
@@ -301,7 +299,9 @@ static void usage(char *argv0) {
 int main(int argc, char *argv[]) {
 
 	if( argc > 1 ) {
-		if( argc != 3 || strcmp(argv[1], "-l") ){
+		std::string argv1(argv[1]);
+
+		if( argc != 3 || argv1.compare("-l") ){
 			usage(argv[0]);
 		}
 

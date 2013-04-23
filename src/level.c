@@ -1,14 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include <iostream>
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
 
 #include "level.h"
 
-FILE *level_file;
+static FILE *level_file;
 
-void init_level_file(char *filename) {
-	level_file = fopen(filename, "r");
+#define FILE_SIZE_VEHICULE 8
+
+void init_level_file(string filename) {
+	level_file = fopen(filename.c_str(), "r");
 	if( level_file == NULL ){
 		perror("Couldn't open level file");
 		exit(1);
@@ -26,12 +29,13 @@ t_parking *parse_level_line(char *line, int len) {
 	char buf;
 
 	// FIXME: free if return NULL
-	t_parking *liste = malloc(sizeof(t_parking));
-	t_vehicule *liste_vehicule = malloc(sizeof(t_vehicule) * MAX_VEHICULE);
-	t_position *liste_position = malloc(sizeof(t_position) * MAX_VEHICULE);
+	t_parking *liste = (t_parking *)malloc(sizeof(t_parking));
+	t_vehicule *liste_vehicule = (t_vehicule *)malloc(sizeof(t_vehicule) * MAX_VEHICULE);
+	t_position *liste_position = (t_position *)malloc(sizeof(t_position) * MAX_VEHICULE);
 
 
 	if( len % 8 != 0 ){
+		cout << "LEN != 8 => " << len << endl;
 		return NULL;
 	}
 
@@ -47,6 +51,7 @@ t_parking *parse_level_line(char *line, int len) {
 		buf = line[j];
 
 		if( buf < '0' || buf > '5' ) {
+			cout << "X" << endl;
 			return NULL;
 		}
 
@@ -56,6 +61,7 @@ t_parking *parse_level_line(char *line, int len) {
 		buf = line[j + 2];
 
 		if( buf < '0' || buf > '5' ) {
+			cout << "Y" << endl;
 			return NULL;
 		}
 
@@ -65,6 +71,7 @@ t_parking *parse_level_line(char *line, int len) {
 		buf = line[j + 4];
 
 		if( buf < '2' || buf > '3' ) {
+			cout << "size" << endl;
 			return NULL;
 		}
 
@@ -74,6 +81,7 @@ t_parking *parse_level_line(char *line, int len) {
 		buf = line[j + 6];
 
 		if( buf != '0' && buf != '1' ) {
+			cout << "axis" << endl;
 			return NULL;
 		}
 
@@ -95,9 +103,10 @@ t_parking *read_level_file() {
 
 	// on cherche la prochaine ligne contenant une configuration
 	while ( !feof(level_file) && liste == NULL ) {
+
 		fgets(buf, FILE_SIZE_VEHICULE * MAX_VEHICULE, level_file); // on lit un ligne
 
-		len = strlen(buf) - 1;
+		len = string(buf).length() - 1;
 
 		if( buf[0] != '#' ){
 			liste = parse_level_line(buf, len);

@@ -62,10 +62,10 @@ int ajout(t_ABR *pa, t_parking p){
 
 	if (*pa == NULL) {
 
-		*pa = malloc(sizeof(t_Noeud));
+		*pa = (t_Noeud *)malloc(sizeof(t_Noeud));
 		(*pa)->config.nb_vehicules = p.nb_vehicules;
-		(*pa)->config.vehicule = malloc(sizeof(t_vehicule)*p.nb_vehicules);
-		(*pa)->config.position = malloc(sizeof(t_position)*p.nb_vehicules);
+		(*pa)->config.vehicule = (t_vehicule *)malloc(sizeof(t_vehicule)*p.nb_vehicules);
+		(*pa)->config.position = (t_position *)malloc(sizeof(t_position)*p.nb_vehicules);
 
 		for (k = 0; k < p.nb_vehicules; k++) {
 			(*pa)->config.vehicule[k].axe = p.vehicule[k].axe;
@@ -148,10 +148,10 @@ t_chemin solution(t_parking  parking){
 	//declaration de la file et insertion du 1er parking
 	t_file file, aux;
 
-	file = malloc(sizeof(t_Maillon));
+	file = (t_Maillon *)malloc(sizeof(t_Maillon));
 	file->config.nb_vehicules = parking.nb_vehicules;
-	file->config.vehicule = malloc(sizeof(t_vehicule) * parking.nb_vehicules);
-	file->config.position = malloc(sizeof(t_position) * parking.nb_vehicules);
+	file->config.vehicule = (t_vehicule *)malloc(sizeof(t_vehicule) * parking.nb_vehicules);
+	file->config.position = (t_position *)malloc(sizeof(t_position) * parking.nb_vehicules);
 
 	for (k = 0; k < nb_vehicules; k++){
 		file->config.vehicule[k].axe = parking.vehicule[k].axe;
@@ -161,7 +161,7 @@ t_chemin solution(t_parking  parking){
 	}
 
 	file->suivant = NULL;
-	file->chemin = malloc(sizeof(t_mouvement));
+	file->chemin = (t_mouvement *)malloc(sizeof(t_mouvement));
 
 	file->chemin->voiture = -1;
 	file->chemin->deplacement = 0; //pour differencier l initialisation de la fin d un chemin.
@@ -177,10 +177,10 @@ t_chemin solution(t_parking  parking){
 			for(j = 0; j < 2; j++){
 
 				if (continuer){
-					aux->suivant = malloc(sizeof(t_Maillon));
+					aux->suivant = (t_Maillon *)malloc(sizeof(t_Maillon));
 					aux->suivant->config.nb_vehicules = nb_vehicules;
-					aux->suivant->config.vehicule = malloc(sizeof(t_vehicule)*nb_vehicules);
-					aux->suivant->config.position = malloc(sizeof(t_position)*nb_vehicules);
+					aux->suivant->config.vehicule = (t_vehicule *)malloc(sizeof(t_vehicule)*nb_vehicules);
+					aux->suivant->config.position = (t_position *)malloc(sizeof(t_position)*nb_vehicules);
 
 					for (k = 0; k < nb_vehicules; k++){
 						aux->suivant->config.vehicule[k].axe = file->config.vehicule[k].axe;
@@ -216,7 +216,7 @@ t_chemin solution(t_parking  parking){
 							l++;
 						} //RMQ : ici je ne teste que voiture pour garder l=0 si on est ds le 1er cas.
 
-						aux->suivant->chemin = malloc(sizeof(t_mouvement)*(l+2)); //longueur relle + ajout +  (-1,-1)
+						aux->suivant->chemin = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); //longueur relle + ajout +  (-1,-1)
 
 						//copie du chemin precedent
 						for(k = 0; k < l; k++) {
