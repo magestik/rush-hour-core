@@ -1,18 +1,27 @@
-CFLAGS=-Wall
-GLFLAGS=-lGL -lGLU -lglut -lm
+CXX = g++
+LD = g++
 
-TARGETS=BiG_Hour
+CXXFLAGS = -g -Wall
+LDFLAGS = -lGL -lGLU -lglut -lm
+
+TARGETS = BiG_Hour
+
+SOURCES = $(wildcard src/*.cpp)
+HEADER = ./src/pre.h
 
 all: $(TARGETS)
 
-BiG_Hour: rush.o graphique.o resolution.o level.o
-	$(CXX) -o $@ $^ $(CFLAGS) $(GLFLAGS)
+BiG_Hour: $(SOURCES:cpp=o)
+	$(LD) $^ -o $@ $(LDFLAGS)
 
-%.o: ./src/%.c
-	$(CXX) -o $@ -c $< $(CFLAGS)
+%.o: %.cpp pre.h.gch
+	$(CXX) $< -o $@ -c $(CXXFLAGS)
+
+pre.h.gch: ./src/pre.h
+	$(CXX) $< -o ./src/$@ $(CXXFLAGS)
 
 clean:
-	rm -f *.o
+	cd src; rm -f *.o pre.h.gch
 
 mrproper: clean
 	rm -f $(TARGETS)

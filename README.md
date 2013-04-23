@@ -13,10 +13,7 @@ Le jeu utilise OpenGL, GLU et GLUT.
 How to play
 =========
 
-Pour le moment on ne peut plus jouer dans le sens ou on ne peut pas déplacer les blocs.
-Cependant, la résolution marche parfaitement.
-
-F1: résoudre la grille
-F2: nouvelle grille
+Pour le moment on ne peut pas vraiment jouer (le joueur ne peut pas déplacer des blocs lui même).
+Cependant, la résolution marche (en cliquant sur la fenêtre).
 
 Les touches directionnelles peuvent être utilisées pour déplacer la caméra autour du plateau de jeu.
