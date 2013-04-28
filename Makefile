@@ -1,8 +1,8 @@
 CXX = g++
 LD = g++
 
-CXXFLAGS = -g -Wall
-LDFLAGS = -lGL -lGLU -lglut -lm
+CXXFLAGS = -g -Wall -pg
+LDFLAGS = -lGL -lGLU -lglut -lm -pg
 
 TARGETS = BiG_Hour
 

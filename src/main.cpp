@@ -61,7 +61,7 @@ float animation = 0.0f;
 	if (resolution > 0 && animation > 1.0f) {
 		int k = resolution - 1;
 
-		move(2*chemin[k].deplacement-1, chemin[k].voiture, *parking_actuel);
+		parking_actuel->move(2*chemin[k].deplacement-1, chemin[k].voiture);
 
 		if (chemin[k].deplacement == -1 && chemin[k].voiture == -1) {
 			resolution = 0;

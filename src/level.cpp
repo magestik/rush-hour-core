@@ -6,7 +6,8 @@ static FILE *level_file;
 
 void init_level_file(std::string filename) {
 	level_file = fopen(filename.c_str(), "r");
-	if( level_file == NULL ){
+
+	if (NULL == level_file) {
 		perror("Couldn't open level file");
 		exit(1);
 	}
@@ -14,7 +15,7 @@ void init_level_file(std::string filename) {
 	parking_actuel = read_level_file();
 }
 
-void close_level_file(){
+void close_level_file() {
 	fclose(level_file);
 }
 
@@ -26,7 +27,7 @@ CGameBoard *parse_level_line(char *line, int len) {
 	CGameBoard *liste = new CGameBoard();
 
 
-	if( len % 8 != 0 ){
+	if (0 != len % 8 ) {
 		std::cout << "LEN != 8 => " << len << std::endl;
 		return NULL;
 	}
@@ -116,3 +117,15 @@ CGameBoard *read_level_file() {
 
 	return liste;
 }
+
+/*
+ * Charge le prochain niveau du fichier
+ */
+void load_next_level() {
+	//free(parking_actuel->vehicule);
+	//free(parking_actuel->position);
+	free(parking_actuel);
+
+	parking_actuel = read_level_file();
+}
+

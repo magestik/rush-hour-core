@@ -1,6 +1,32 @@
 #ifndef RESOLUTION_H
 #define RESOLUTION_H
 
+/* ABR */
+
+class ABR_Node {
+public:
+	ABR_Node(void) : f_gauche(NULL), f_droit(NULL) { }
+
+	CGameBoard config;
+	ABR_Node *f_gauche;
+	ABR_Node *f_droit;
+};
+
+class ABR {
+public:
+	ABR(void);
+	~ABR(void);
+	bool add(const CGameBoard & p);
+
+private:
+	ABR_Node * root;
+	bool add(ABR_Node ** node, const CGameBoard & p);
+	int compare(const CGameBoard & p1, const CGameBoard & p2);
+};
+
+
+/* File */
+
 typedef struct sMaillon {
 	CGameBoard config;
 	t_chemin chemin;
@@ -9,19 +35,7 @@ typedef struct sMaillon {
 
 typedef t_Maillon * t_file;
 
-typedef struct sNoeud {
-	CGameBoard config;
-	struct sNoeud *f_gauche;
-	struct sNoeud *f_droit;
-} t_Noeud;
-
-typedef t_Noeud * t_ABR;
-
-int superieur(CGameBoard p1, CGameBoard p2);
-int egal(CGameBoard p1, CGameBoard p2);
-int ajout(t_ABR *pa, CGameBoard p);
 void defiler(t_file *pF);
-void free_arbre(t_ABR arbre);
 void free_file(t_file file);
 
 #endif

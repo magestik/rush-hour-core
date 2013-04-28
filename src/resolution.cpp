@@ -1,97 +1,13 @@
 #include "pre.h"
 
-/*
- * Teste si une configuration de parking est 'strictement superieure' a une autre configuration
- * selon l ordre defini
- */
-int superieur(CGameBoard p1, CGameBoard p2) {
-
-	int nb_vehicules = p1.vehicules.size();
-	int i;
-
-	for (i = 0; i < nb_vehicules; i++) {
-		if ( p1.vehicules[i]->position.abs > p2.vehicules[i]->position.abs ) {
-			return 1;
-		} else {
-
-			if ( p1.vehicules[i]->position.abs == p2.vehicules[i]->position.abs ) {
-				if ( p1.vehicules[i]->position.ord > p2.vehicules[i]->position.ord ) {
-					return 1;
-				} else {
-			 		if (p1.vehicules[i]->position.ord != p2.vehicules[i]->position.ord) {
-						return 0;
-					}
-			 	}
-			} else {
-				return 0;
-			}
-		}
-	}
-
-	return 0;
+ABR::ABR()
+{
+	this->root = NULL;
 }
 
-/*
- * Teste si une configuration de parking est 'egale' a une autre configuration
- * selon l ordre defini
- */
-int egal(CGameBoard p1, CGameBoard p2){
-
-	int nb_vehicules = p1.vehicules.size();
-	int i;
-
-	for (i = 0; i < nb_vehicules; i++) {
-		if ( p1.vehicules[i]->position.abs != p2.vehicules[i]->position.abs || p1.vehicules[i]->position.ord != p2.vehicules[i]->position.ord ) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-/*
- * Ajoute une configuration dans un ABR s'il n'est pas deja present
- * Renvoi 1 si l'ajout est effectué
- * Renvoi 0 si l'ajout n'est pas effectué
- */
-int ajout(t_ABR *pa, CGameBoard p){
-	if (*pa == NULL) {
-
-		*pa = new t_Noeud;
-		(*pa)->f_gauche=NULL;
-		(*pa)->f_droit=NULL;
-
-		for (unsigned int k = 0; k < p.vehicules.size(); k++) {
-			(*pa)->config.vehicules.push_back(new CGameBlock(p.vehicules[k]->position, p.vehicules[k]->size, p.vehicules[k]->axis));
-		}
-
-		return 1;
-
-	} else {
-
-		if (egal(p,(*pa)->config)) {
-			return 0;
-		}
-
-		if ( superieur(p,(*pa)->config) ){
-			return ajout(&((*pa)->f_droit), p);
-		} else {
-			return ajout(&((*pa)->f_gauche), p);
-		}
-	}
-}
-
-/*
- * Enleve le premier element de la file
- */
-void defiler(t_file *pF){
-	t_file aux = *pF;
-	*pF = (*pF)->suivant;
-	//free(aux->config.vehicules); // FIXME memory leak
-	free(aux);
-}
-
-void free_arbre(t_ABR arbre){
+ABR::~ABR()
+{
+	/*
     t_ABR fg, fd;
     if (arbre != NULL){
         fg = arbre->f_gauche;
@@ -108,7 +24,89 @@ void free_arbre(t_ABR arbre){
         if(fd != NULL) {
 			free_arbre(fd);
 		}
-    }
+    }*/
+}
+
+/*
+ * Ajoute une configuration dans un ABR s'il n'est pas deja present
+ * Renvoi 1 si l'ajout est effectué
+ * Renvoi 0 si l'ajout n'est pas effectué
+ */
+bool ABR::add(const CGameBoard & p) {
+	return this->add(&(this->root), p);
+}
+
+bool ABR::add(ABR_Node ** node, const CGameBoard & p) {
+	if (NULL == *node) {
+
+		*node = new ABR_Node;
+
+		(*node)->f_gauche	= NULL;
+		(*node)->f_droit	= NULL;
+
+		(*node)->config = p;
+
+		return true;
+
+	} else {
+
+		int comparaison = this->compare(p, (*node)->config);
+
+		if (comparaison == 0) {
+			return false;
+		} else if (comparaison == 1) {
+			return this->add(&((*node)->f_droit), p);
+		} else {
+			return this->add(&((*node)->f_gauche), p);
+		}
+	}
+}
+
+/*
+ * Compare deux plateaux selon un ordre défini (pour l'ABR)
+ * retourne 0 si ils sont identiques
+ * retourne 1 si le premier est supérieur
+ * retourne -1 si le deuxième est supérieur
+ */
+int ABR::compare(const CGameBoard & p1, const CGameBoard & p2) {
+
+	int nb_vehicules = p1.vehicules.size();
+
+	for (int i = 0; i < nb_vehicules; i++) {
+
+		if (p1.vehicules[i]->position.abs > p2.vehicules[i]->position.abs) {
+
+			return 1;
+
+		} else if (p1.vehicules[i]->position.abs < p2.vehicules[i]->position.abs) {
+
+			return -1;
+
+		} else {
+
+			if (p1.vehicules[i]->position.ord > p2.vehicules[i]->position.ord) {
+
+				return 1;
+
+			} else if (p1.vehicules[i]->position.ord != p2.vehicules[i]->position.ord) {
+
+				return -1;
+
+			}
+		}
+	}
+
+	return 0;
+}
+
+/*
+ * Enleve le premier element de la file
+ */
+void defiler(t_file *pF){
+	t_file aux = *pF;
+	*pF = (*pF)->suivant;
+	//free(aux->config.vehicules); // FIXME memory leak
+	free(aux);
 }
 
 void free_file(t_file file){

@@ -22,6 +22,7 @@ typedef struct {
 
 typedef t_mouvement * t_chemin;
 
+#define MAX_VEHICULE 15
 #define HEIGHT 6
 #define WIDTH 6
 
@@ -49,7 +50,6 @@ public:
 
 #include "resolution.h"
 #include "level.h"
-#include "rush.h"
 
 
 #endif
