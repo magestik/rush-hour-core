@@ -4,7 +4,7 @@
 
 extern int id_cube;
 
-CGameBoard *parking_actuel;
+CGameBoard parking_actuel;
 
 int resolution = 0;
 t_chemin chemin;
@@ -17,6 +17,7 @@ float animation = 0.0f;
 
 /*static*/ void SimpleApplication::OnPreInitialize(void) {
 	init_level_file("levels.data"); // default file name
+	parking_actuel = read_level_file();
 }
 
 /*static*/ void SimpleApplication::OnPostInitialize(void) {
@@ -34,7 +35,7 @@ float animation = 0.0f;
 		animation += delta / ANIMATION_DURATION;
 	}
 
-	for (unsigned int i = 0; i < parking_actuel->vehicules.size(); i++) {
+	for (unsigned int i = 0; i < parking_actuel.vehicules.size(); i++) {
 		if(0 == i) {
 			glColor3ub(255, 0, 0);
 		} else {
@@ -42,12 +43,12 @@ float animation = 0.0f;
 		}
 
 		glPushMatrix();
-			y = parking_actuel->vehicules[i]->position.ord*-3 + 6 - (parking_actuel->vehicules[i]->axis * 3 * (parking_actuel->vehicules[i]->size - 1));
-			x = parking_actuel->vehicules[i]->position.abs*3 - 9;
+			y = parking_actuel.vehicules[i].position.m_y * -3 + 6 - (parking_actuel.vehicules[i].axis * 3 * (parking_actuel.vehicules[i].size - 1));
+			x = parking_actuel.vehicules[i].position.m_x *  3 - 9;
 			glTranslatef(y, 0, x);
 
-			x = parking_actuel->vehicules[i]->axis * parking_actuel->vehicules[i]->size * 1.5 + (1 - parking_actuel->vehicules[i]->axis) * 1.5;
-			y = (1 - parking_actuel->vehicules[i]->axis) * parking_actuel->vehicules[i]->size * 1.5 + parking_actuel->vehicules[i]->axis * 1.5;
+			x = parking_actuel.vehicules[i].axis * parking_actuel.vehicules[i].size * 1.5 + (1 - parking_actuel.vehicules[i].axis) * 1.5;
+			y = (1 - parking_actuel.vehicules[i].axis) * parking_actuel.vehicules[i].size * 1.5 + parking_actuel.vehicules[i].axis * 1.5;
 			glScalef(x, 1, y);
 
 			glCallList(id_cube);
@@ -61,11 +62,11 @@ float animation = 0.0f;
 	if (resolution > 0 && animation > 1.0f) {
 		int k = resolution - 1;
 
-		parking_actuel->move(2*chemin[k].deplacement-1, chemin[k].voiture);
+		parking_actuel.move(2*chemin[k].deplacement-1, chemin[k].voiture);
 
 		if (chemin[k].deplacement == -1 && chemin[k].voiture == -1) {
 			resolution = 0;
-			load_next_level();
+			parking_actuel = read_level_file();
 		} else {
 			resolution++;
 		}
@@ -93,7 +94,7 @@ float animation = 0.0f;
 /*static*/ void SimpleApplication::OnTouchDown(int iTouch, float positionX, float positionY) {
 	if (0 == iTouch) {
 		if (0 == resolution) {
-			chemin = parking_actuel->solution();
+			chemin = parking_actuel.solution();
 			resolution = 1;
 		}
 	}

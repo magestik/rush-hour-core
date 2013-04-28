@@ -10,8 +10,8 @@
 #include <GL/gl.h>
 
 typedef struct {
-	short abs;
-	short ord;
+	short m_x;
+	short m_y;
 } t_position;
 
 
@@ -48,7 +48,9 @@ public:
 #include "GameBlock.h"
 #include "GameBoard.h"
 
-#include "resolution.h"
+#include "BinarySearchTree.h"
+#include "Queue.h"
+
 #include "level.h"
 
 

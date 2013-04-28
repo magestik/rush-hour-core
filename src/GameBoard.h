@@ -13,5 +13,5 @@ public:
 	bool is_move_impossible(int mvt, unsigned int num_vehicule);
 
 public:
-	std::vector<CGameBlock *> vehicules;
+	std::vector<CGameBlock> vehicules;
 };

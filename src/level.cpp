@@ -11,59 +11,56 @@ void init_level_file(std::string filename) {
 		perror("Couldn't open level file");
 		exit(1);
 	}
-
-	parking_actuel = read_level_file();
 }
 
 void close_level_file() {
 	fclose(level_file);
 }
 
-CGameBoard *parse_level_line(char *line, int len) {
+CGameBoard parse_level_line(char *line, int len) {
 	char buf;
 	t_position pos;
 	int size;
-	// FIXME: free if return NULL
-	CGameBoard *liste = new CGameBoard();
 
+	CGameBoard liste;
 
-	if (0 != len % 8 ) {
+	if (0 != len % FILE_SIZE_VEHICULE ) {
 		std::cout << "LEN != 8 => " << len << std::endl;
-		return NULL;
+		return liste;
 	}
 
 	// X;Y;S;A;
 
-	for (int i = 0; i < len/8; i++) {
+	for (int i = 0; i < len/FILE_SIZE_VEHICULE; i++) {
 
-		int j = i * 8;
+		int j = i * FILE_SIZE_VEHICULE;
 
 		// Parse X
 		buf = line[j];
 
 		if( buf < '0' || buf > '5' ) {
 			std::cout << "X" << std::endl;
-			return NULL;
+			return liste;
 		}
 
-		pos.abs = buf - '0';
+		pos.m_x = buf - '0';
 
 		// Parse Y
 		buf = line[j + 2];
 
 		if( buf < '0' || buf > '5' ) {
 			std::cout << "Y" << std::endl;
-			return NULL;
+			return liste;
 		}
 
-		pos.ord = buf - '0';
+		pos.m_y = buf - '0';
 
 		// Parse Size
 		buf = line[j + 4];
 
 		if( buf < '2' || buf > '3' ) {
 			std::cout << "size" << std::endl;
-			return NULL;
+			return liste;
 		}
 
 		size = buf - '0';
@@ -72,12 +69,12 @@ CGameBoard *parse_level_line(char *line, int len) {
 		buf = line[j + 6];
 
 		if( buf == '0' ) {
-			liste->vehicules.push_back(new CGameBlock(pos, size, CGameBlock::e_axis_vertical));
+			liste.vehicules.push_back(CGameBlock(pos, size, CGameBlock::e_axis_vertical));
 		} else if ( buf == '1') {
-			liste->vehicules.push_back(new CGameBlock(pos, size, CGameBlock::e_axis_horizontal));
+			liste.vehicules.push_back(CGameBlock(pos, size, CGameBlock::e_axis_horizontal));
 		} else {
 			std::cout << "axis" << std::endl;
-			return NULL;
+			return liste;
 		}
 
 
@@ -87,15 +84,15 @@ CGameBoard *parse_level_line(char *line, int len) {
 	return liste;
 }
 
-CGameBoard *read_level_file() {
+CGameBoard read_level_file() {
 
 	int len;
 	char buf[FILE_SIZE_VEHICULE * MAX_VEHICULE];
 
-	CGameBoard *liste = NULL;
+	CGameBoard liste;
 
 	// on cherche la prochaine ligne contenant une configuration
-	while ( !feof(level_file) && liste == NULL ) {
+	while (!feof(level_file)) {
 
 		fgets(buf, FILE_SIZE_VEHICULE * MAX_VEHICULE, level_file); // on lit un ligne
 
@@ -103,29 +100,19 @@ CGameBoard *read_level_file() {
 
 		if( buf[0] != '#' ){
 			liste = parse_level_line(buf, len);
-
+			break;
+/*
 			if( liste == NULL ) {
 				std::cerr << "Bad level line !" << std::endl;
-			}
+			}*/
 		}
 	}
 
-	if( feof(level_file) && liste == NULL ) {
+	if (feof(level_file)) {
 		std::cout << "Congratulations !" << std::endl;
 		exit(0); // FIXME
 	}
 
 	return liste;
-}
-
-/*
- * Charge le prochain niveau du fichier
- */
-void load_next_level() {
-	//free(parking_actuel->vehicule);
-	//free(parking_actuel->position);
-	free(parking_actuel);
-
-	parking_actuel = read_level_file();
 }
 
