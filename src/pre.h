@@ -7,8 +7,6 @@
 #include <string>
 #include <cmath>
 
-#include <GL/gl.h>
-
 typedef struct {
 	short m_x;
 	short m_y;

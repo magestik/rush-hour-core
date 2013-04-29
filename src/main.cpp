@@ -1,5 +1,7 @@
 #include "pre.h"
 
+#include <GL/gl.h>
+
 #define ANIMATION_DURATION 0.5f
 
 extern int id_cube;
@@ -105,5 +107,5 @@ float animation = 0.0f;
 }
 
 /*static*/ void SimpleApplication::OnTouchMove(int iTouch, float positionX, float positionY) {
-
+	std::cout << "move :" << positionX << " "<< positionY << std::endl;
 }

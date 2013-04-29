@@ -228,13 +228,17 @@ void mouse(int button, int state, int x, int y) {
 	}
 }
 
+void motion(int x, int y) {
+	SimpleApplication::OnTouchMove(0, x, y);
+}
+
 int main(int argc, char *argv[]) {
 
 	SimpleApplication::OnPreInitialize();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // | GLUT_STEREO
-	glutInitWindowSize(640, 480);
+	glutInitWindowSize(1024, 768);
     glutCreateWindow("BiG Hour");
 
     glutDisplayFunc(draw);
@@ -242,6 +246,8 @@ int main(int argc, char *argv[]) {
     glutReshapeFunc(reshape);
     glutSpecialFunc(special);
     glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+    glutPassiveMotionFunc(motion);
 
 	// Init GL
 	glEnable(GL_DEPTH_TEST);
