@@ -1,5 +1,44 @@
 #include "pre.h"
 
+
+/*
+* Compare deux plateaux selon un ordre défini (pour l'ABR)
+* retourne 0 si ils sont identiques
+* retourne 1 si le premier est supérieur
+* retourne -1 si le deuxième est supérieur
+*/
+int compare(const CGameBoard & p1, const CGameBoard & p2) {
+
+	int nb_vehicules = p1.vehicules.size();
+
+	for (int i = 0; i < nb_vehicules; i++) {
+
+			if (p1.vehicules[i].position.m_x > p2.vehicules[i].position.m_x) {
+
+				return 1;
+
+			} else if (p1.vehicules[i].position.m_x < p2.vehicules[i].position.m_x) {
+
+				return -1;
+
+			} else {
+
+			if (p1.vehicules[i].position.m_y > p2.vehicules[i].position.m_y) {
+
+				return 1;
+
+			} else if (p1.vehicules[i].position.m_y != p2.vehicules[i].position.m_y) {
+
+				return -1;
+
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 /*explicit*/ CGameBoard::CGameBoard(void)
 : vehicules()
 {
@@ -90,7 +129,7 @@ t_chemin CGameBoard::solution(void) {
 
 	int l = 1;
 
-	BinarySearchTree arbre;
+	BinarySearchTree<CGameBoard> arbre;
 
 	//declaration de la file et insertion du 1er maillon
 	t_Maillon * file = new t_Maillon;
