@@ -1,8 +1,6 @@
 #ifndef BST_H
 #define BST_H
 
-int compare(const CGameBoard & p1, const CGameBoard & p2);
-
 template <typename T>
 class BinarySearchTree
 {
