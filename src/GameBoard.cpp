@@ -1,6 +1,5 @@
 #include "pre.h"
 
-
 /*
 * Compare deux plateaux selon un ordre défini (pour l'ABR)
 * retourne 0 si ils sont identiques
@@ -120,7 +119,14 @@ bool CGameBoard::is_move_impossible(int mvt, unsigned int num_vehicule)
 	return false;
 }
 
-t_chemin CGameBoard::solution(void) {
+struct BoardAndPath
+{
+	CGameBoard config;
+	t_chemin chemin;
+};
+
+t_chemin CGameBoard::solution(void)
+{
 	int nb_vehicules = this->vehicules.size();
 
 	bool continuer = true;
@@ -129,80 +135,123 @@ t_chemin CGameBoard::solution(void) {
 
 	int l = 1;
 
+	t_chemin res;
+
 	BinarySearchTree<CGameBoard> arbre;
 
-	//declaration de la file et insertion du 1er maillon
-	t_Maillon * file = new t_Maillon;
+	// Declaration de la file
+	Queue<BoardAndPath> file;
 
-	file->suivant = NULL;
-	file->chemin = (t_mouvement *)malloc(sizeof(t_mouvement));
-	file->chemin->voiture = -1;
-	file->chemin->deplacement = 0; //pour differencier l initialisation de la fin d un chemin.
-	file->config = *this;
+	// Insertion du 1er maillon
+	BoardAndPath BP;
+	BP.chemin = (t_mouvement *)malloc(sizeof(t_mouvement));
+	BP.chemin->voiture = -1;
+	BP.chemin->deplacement = 0; //pour differencier l initialisation de la fin d un chemin.
+	BP.config = *this;
 
-	t_file aux = file;
+	file.enqueue(BP);
 
+	// Insertion de la configuration actuelle dans l'arbre
 	arbre.add(*this);
 
 	// Début de la resolution
+	while (continuer)
+	{
+		for (int i = 0; i < nb_vehicules && continuer; i++)
+		{
+			for (int j = 0; j < 2 && continuer; j++)
+			{
+				const BoardAndPath & first = file.first();
+				CGameBoard	CurrentConfig	= first.config;
+				t_chemin	CurrentPath		= first.chemin;
 
-	while (continuer) {
-		for (int i = 0; i < nb_vehicules && continuer; i++) {
-			for (int j = 0; j < 2 && continuer; j++) {
-
-				aux->suivant = new t_Maillon;
-				aux->suivant->config = file->config;
-
-				if (!aux->suivant->config.is_move_impossible(2*j-1, i)) {
-
-					if (i == 0 && j == 1 && aux->suivant->config.vehicules[0].position.m_x+1 == 5 && aux->suivant->config.vehicules[0].position.m_y == 2 ){
+				if (!CurrentConfig.is_move_impossible(2*j-1, i)) // mouvement possible
+				{
+					if (i == 0 && j == 1 && CurrentConfig.vehicules[0].position.m_x+1 == 5 && CurrentConfig.vehicules[0].position.m_y == 2 )
+					{
 						continuer = false; // victoire (fin condition sortie boucle while)
-					} else {
-						aux->suivant->config.move(2*j-1, i); // mouvement
+					}
+					else
+					{
+						CurrentConfig.move(2*j-1, i); // mouvement
 					}
 				}
 
-				nouveau = arbre.add(aux->suivant->config); //ajout(&arbre, aux->suivant->config);
+				nouveau = arbre.add(CurrentConfig); //ajout(&arbre, aux->suivant->config);
 
-				if (nouveau || continuer == false) {
+				// n'existe pas déjà dans l'arbre
+				if (nouveau && continuer)
+				{
+					/* Compte la longueur du chemin */
+
 					l = 0; // longueur reelle du chemin
 
-					while (!(file->chemin[l].voiture==-1)){
-						l++;
+					while (!(CurrentPath[l].voiture == -1))
+					{
+						++l;
 					} //RMQ : ici je ne teste que voiture pour garder l=0 si on est ds le 1er cas.
 
-					aux->suivant->chemin = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); //longueur relle + ajout (1,-1)
 
-					//copie du chemin precedent
-					for(int k = 0; k < l; k++) {
-						aux->suivant->chemin[k].voiture = file->chemin[k].voiture;
-						aux->suivant->chemin[k].deplacement = file->chemin[k].deplacement;
+					/* Création d'un nouveau noeud */
+
+					BoardAndPath BP;
+
+					BP.config = CurrentConfig;
+
+					BP.chemin = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); // longueur actuelle + ajout (1,-1)
+
+					// Copie du chemin precedent
+					for (int k = 0; k < l; k++)
+					{
+						BP.chemin[k].voiture = CurrentPath[k].voiture;
+						BP.chemin[k].deplacement = CurrentPath[k].deplacement;
 					}
 
 					//ajout du nouveau deplacement
-					aux->suivant->chemin[l].voiture = i;
-					aux->suivant->chemin[l].deplacement = j;
+					BP.chemin[l].voiture = i;
+					BP.chemin[l].deplacement = j;
 
-					aux->suivant->chemin[l+1].voiture = -1;
-					aux->suivant->chemin[l+1].deplacement = -1;
+					BP.chemin[l+1].voiture = -1;
+					BP.chemin[l+1].deplacement = -1;
 
-					aux = aux->suivant;
-					aux->suivant = NULL;
-				} else {
-					//free(aux->suivant->chemin);
-					delete aux->suivant;
-					aux->suivant = NULL;
+					file.enqueue(BP);
+				}
+
+				// Victoire
+				if (!continuer)
+				{
+					l = 0; // longueur reelle du chemin
+
+					while (!(CurrentPath[l].voiture == -1))
+					{
+						++l;
+					} //RMQ : ici je ne teste que voiture pour garder l=0 si on est ds le 1er cas.
+
+					res = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); // longueur actuelle + ajout (1,-1)
+
+					// Copie du chemin precedent
+					for (int k = 0; k < l; k++)
+					{
+						res[k].voiture = CurrentPath[k].voiture;
+						res[k].deplacement = CurrentPath[k].deplacement;
+					}
+
+					//ajout du nouveau deplacement
+					res[l].voiture = i;
+					res[l].deplacement = j;
+
+					res[l+1].voiture = -1;
+					res[l+1].deplacement = -1;
 				}
 			} // Fin boucle j
 		} // Fin boucle i
 
-		if (continuer) {
-			defiler(&file);
+		if (continuer)
+		{
+			file.dequeue();
 		}
 
 	} // Fin boucle continuer
 
-	free_file(file);
-
-	return aux->chemin;
+	return res;
 }
