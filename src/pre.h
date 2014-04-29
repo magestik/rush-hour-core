@@ -1,13 +1,9 @@
 #ifndef __PRE_H__
 #define __PRE_H__
 
-/* STL */
-#include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
 #include <cmath>
-
 /* Own containers */
 
 #include <BinarySearchTree.h>
@@ -48,6 +44,6 @@ struct t_position
 #include "GameBlock.h"
 #include "GameBoard.h"
 
-#include "level.h"
+#include "LevelManager.h"
 
 #endif

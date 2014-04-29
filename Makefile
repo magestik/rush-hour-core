@@ -1,6 +1,3 @@
-CXX = g++
-LD = g++
-
 CXXFLAGS = -g -Wall -pg -Iinclude
 LDFLAGS = -lGL -lGLU -lglut -lm -pg
 
@@ -12,7 +9,7 @@ HEADER = ./src/pre.h
 all: $(TARGETS)
 
 BiG_Hour: $(SOURCES:cpp=o)
-	$(LD) $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 %.o: %.cpp pre.h.gch
 	$(CXX) $< -o $@ -c $(CXXFLAGS)

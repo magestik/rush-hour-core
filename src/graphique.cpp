@@ -136,7 +136,7 @@ void creer_cube(){
 void positionCamera(){
 	posX = 30 * cos(angle * M_PI/180);
 	posZ = 30 * sin(angle * M_PI/180);
-	std::cout << "Caméra positionné en (" << posX << ", " << posY << ", " << posZ << ") [angle="<< angle <<"]" << std::endl;
+	//std::cout << "Caméra positionné en (" << posX << ", " << posY << ", " << posZ << ") [angle="<< angle <<"]" << std::endl;
 }
 
 void draw() {
@@ -193,22 +193,18 @@ void special(int key, int x, int y) {
 		break;
 
 		case GLUT_KEY_LEFT:
-			std::cout << "Gauche" << std::endl;
 			angle = (angle + 5) % 360;
 		break;
 
 		case GLUT_KEY_RIGHT:
-			std::cout << "Droite" << std::endl;
 			angle = (angle - 5) % 360;
 		break;
 
 		case GLUT_KEY_UP:
-			std::cout << "Haut" << std::endl;
 			posY +=5;
 		break;
 
 		case GLUT_KEY_DOWN:
-			std::cout << "Bas" << std::endl;
 			posY -= 5;
 		break;
 	}

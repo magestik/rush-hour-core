@@ -13,16 +13,21 @@ t_chemin chemin;
 
 float animation = 0.0f;
 
+LevelManager g_levelManager;
+
 //
 // INITIALIZE
 //
 
-/*static*/ void SimpleApplication::OnPreInitialize(void) {
-	init_level_file("levels.data"); // default file name
-	parking_actuel = read_level_file();
+/*static*/ void SimpleApplication::OnPreInitialize(void)
+{
+	g_levelManager.Initialize("levels.data");
+
+	parking_actuel = g_levelManager.getNextLevel();
 }
 
-/*static*/ void SimpleApplication::OnPostInitialize(void) {
+/*static*/ void SimpleApplication::OnPostInitialize(void)
+{
 
 }
 
@@ -30,21 +35,28 @@ float animation = 0.0f;
 // UPDATE
 //
 
-/*static*/ void SimpleApplication::OnPreUpdate(float delta) {
+/*static*/ void SimpleApplication::OnPreUpdate(float delta)
+{
 	float x, y;
 
-	if (resolution > 0) {
+	if (resolution > 0)
+	{
 		animation += delta / ANIMATION_DURATION;
 	}
 
-	for (unsigned int i = 0; i < parking_actuel.vehicules.size(); i++) {
-		if(0 == i) {
+	for (unsigned int i = 0; i < parking_actuel.vehicules.size(); i++)
+	{
+		if(0 == i)
+		{
 			glColor3ub(255, 0, 0);
-		} else {
+		}
+		else
+		{
 			glColor3ub((i*154)%255, (i*142)%255, (i*45)%255);
 		}
 
 		glPushMatrix();
+		{
 			y = parking_actuel.vehicules[i].position.m_y * -3 + 6 - (parking_actuel.vehicules[i].axis * 3 * (parking_actuel.vehicules[i].size - 1));
 			x = parking_actuel.vehicules[i].position.m_x *  3 - 9;
 			glTranslatef(y, 0, x);
@@ -54,22 +66,27 @@ float animation = 0.0f;
 			glScalef(x, 1, y);
 
 			glCallList(id_cube);
+		}
 		glPopMatrix();
 
 	}
 }
 
-/*static*/ void SimpleApplication::OnPostUpdate(float delta) {
-
-	if (resolution > 0 && animation > 1.0f) {
+/*static*/ void SimpleApplication::OnPostUpdate(float delta)
+{
+	if (resolution > 0 && animation > 1.0f)
+	{
 		int k = resolution - 1;
 
 		parking_actuel.move(2*chemin[k].deplacement-1, chemin[k].voiture);
 
-		if (chemin[k].deplacement == -1 && chemin[k].voiture == -1) {
+		if (chemin[k].deplacement == -1 && chemin[k].voiture == -1)
+		{
 			resolution = 0;
-			parking_actuel = read_level_file();
-		} else {
+			parking_actuel = g_levelManager.getNextLevel();
+		}
+		else
+		{
 			resolution++;
 		}
 
@@ -81,11 +98,13 @@ float animation = 0.0f;
 // RELASE
 //
 
-/*static*/ void SimpleApplication::OnPreRelease(void) {
-	close_level_file();
+/*static*/ void SimpleApplication::OnPreRelease(void)
+{
+	g_levelManager.Release();
 }
 
-/*static*/ void SimpleApplication::OnPostRelease(void) {
+/*static*/ void SimpleApplication::OnPostRelease(void)
+{
 
 }
 
@@ -93,19 +112,24 @@ float animation = 0.0f;
 // INPUTS
 //
 
-/*static*/ void SimpleApplication::OnTouchDown(int iTouch, float positionX, float positionY) {
-	if (0 == iTouch) {
-		if (0 == resolution) {
+/*static*/ void SimpleApplication::OnTouchDown(int iTouch, float positionX, float positionY)
+{
+	if (0 == iTouch)
+	{
+		if (0 == resolution)
+		{
 			chemin = parking_actuel.solution();
 			resolution = 1;
 		}
 	}
 }
 
-/*static*/ void SimpleApplication::OnTouchUp(int iTouch, float positionX, float positionY) {
+/*static*/ void SimpleApplication::OnTouchUp(int iTouch, float positionX, float positionY)
+{
 
 }
 
-/*static*/ void SimpleApplication::OnTouchMove(int iTouch, float positionX, float positionY) {
-	std::cout << "move :" << positionX << " "<< positionY << std::endl;
+/*static*/ void SimpleApplication::OnTouchMove(int iTouch, float positionX, float positionY)
+{
+	//std::cout << "move :" << positionX << " "<< positionY << std::endl;
 }

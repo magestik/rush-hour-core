@@ -1,6 +1,14 @@
 #ifndef BST_H
 #define BST_H
 
+#ifndef ASSERT
+#define ASSERT(expr)
+#endif
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
 template <typename T>
 class BinarySearchTree
 {
