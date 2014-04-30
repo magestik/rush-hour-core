@@ -1,9 +1,11 @@
 #include "pre.h"
 
-#include <sys/time.h>
-#include <sys/ioctl.h>
-
 #include <GL/glut.h>
+
+#include <Timer.h>
+
+Timer timer1;
+Timer timer2;
 
 /* Position de la caméra */
 int angle = 190;
@@ -17,12 +19,6 @@ int LightPos[4] = {5,12,10,0};
 /* ID des différents objets */
 int id_cube;
 int id_plateau;
-
-double microtime(void) {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return tv.tv_sec + tv.tv_usec*1e-6;
-}
 
 void creer_plateau() {
 	id_plateau = glGenLists(1);
@@ -133,16 +129,15 @@ void creer_cube(){
 	glEndList();
 }
 
-void positionCamera(){
+void positionCamera(void)
+{
 	posX = 30 * cos(angle * M_PI/180);
 	posZ = 30 * sin(angle * M_PI/180);
 	//std::cout << "Caméra positionné en (" << posX << ", " << posY << ", " << posZ << ") [angle="<< angle <<"]" << std::endl;
 }
 
-void draw() {
-	static double last_time = 0;
-	double current_time = microtime();
-
+void draw(void)
+{
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,23 +150,28 @@ void draw() {
 
 	glCallList(id_plateau);
 
-	SimpleApplication::OnPreUpdate(current_time - last_time);
-	last_time = current_time;
+	timer1.Stop();
+
+	SimpleApplication::OnPreUpdate(timer1.getElapsedTime());
+
+	timer1.Start();
 
 	glutSwapBuffers();
 }
 
-void idle() {
-	static double last_time = 0;
-	double current_time = microtime();
+void idle(void)
+{
+	timer2.Stop();
 
-	SimpleApplication::OnPostUpdate(current_time - last_time);
-	last_time = current_time;
+	SimpleApplication::OnPostUpdate(timer2.getElapsedTime());
+
+	timer2.Start();
 
     glutPostRedisplay();
 }
 
-void reshape(int w, int h) {
+void reshape(int w, int h)
+{
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION); // Choisit la matrice de projection
 	glLoadIdentity();
@@ -180,8 +180,10 @@ void reshape(int w, int h) {
 	glLoadIdentity();
 }
 
-void special(int key, int x, int y) {
-	switch(key) {
+void special(int key, int x, int y)
+{
+	switch(key)
+	{
 		case GLUT_KEY_F1:
 			//resolution = 1;
 			//chemin = parking_actuel->solution();
@@ -214,23 +216,32 @@ void special(int key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void mouse(int button, int state, int x, int y) {
-	if (GLUT_LEFT_BUTTON == button) {
-		if (GLUT_DOWN == state) {
+void mouse(int button, int state, int x, int y)
+{
+	if (GLUT_LEFT_BUTTON == button)
+	{
+		if (GLUT_DOWN == state)
+		{
 			SimpleApplication::OnTouchUp(0, x, y);
-		} else {
+		}
+		else
+		{
 			SimpleApplication::OnTouchDown(0, x, y);
 		}
 	}
 }
 
-void motion(int x, int y) {
+void motion(int x, int y)
+{
 	SimpleApplication::OnTouchMove(0, x, y);
 }
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char ** argv)
+{
 	SimpleApplication::OnPreInitialize();
+
+	timer1.Start();
+	timer2.Start();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // | GLUT_STEREO
