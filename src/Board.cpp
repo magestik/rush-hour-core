@@ -1,27 +1,31 @@
-#include "pre.h"
+#include "Board.h"
 
-#include <stdlib.h>
+#include <assert.h>
 
-/*
-* Compare deux plateaux selon un ordre défini (pour l'ABR)
-* retourne =0 si ils sont identiques
-* retourne >0 si le premier est supérieur
-* retourne <0 si le deuxième est supérieur
-*/
-int compare(const CGameBoard & p1, const CGameBoard & p2)
+/**
+ * @brief Compares two boards
+ * Compare deux plateaux selon un ordre défini (pour le BST)
+ * retourne = 0 si ils sont identiques
+ * retourne > 0 si le premier est supérieur
+ * retourne < 0 si le deuxième est supérieur
+ */
+template<unsigned int W, unsigned int H>
+static int compare(const RushHour::Board<W,H> & p1, const RushHour::Board<W,H> & p2)
 {
-	int nb_vehicules = p1.vehicules.size();
+	const unsigned int count1 = p1.getBlockCount();
+	const unsigned int count2 = p2.getBlockCount();
+	assert(count1 == count2);
 
-	for (int i = 0; i < nb_vehicules; i++)
+	for (unsigned int i = 0; i < count1; ++i)
 	{
-		int diffX = p1.vehicules[i].position.m_x - p2.vehicules[i].position.m_x;
+		int diffX = p1[i].getX() - p2[i].getX();
 
 		if (0 != diffX)
 		{
 			return diffX;
 		}
 
-		int diffY = p1.vehicules[i].position.m_y - p2.vehicules[i].position.m_y;
+		int diffY = p1[i].getY() - p2[i].getY();
 
 		if (0 != diffY)
 		{
@@ -33,66 +37,84 @@ int compare(const CGameBoard & p1, const CGameBoard & p2)
 }
 
 /**
- * Constructor
+ * @brief Constructor
  */
-/*explicit*/ CGameBoard::CGameBoard(void)
+template<unsigned int W, unsigned int H>
+RushHour::Board<W,H>::Board(void) : m_iCount(0)
 {
-	this->vehicules.reserve(MAX_VEHICULE);
+	// ...
 }
 
 /**
- * Destructor
+ * @brief Destructor
  */
-/*virtual*/ CGameBoard::~CGameBoard(void)
+template<unsigned int W, unsigned int H>
+RushHour::Board<W,H>::~Board(void)
 {
-
+	// ...
 }
 
 /**
- * Move a block
+ * @brief Add a block in the board
  */
-void CGameBoard::move(int mvt, unsigned int num_vehicule)
+template<unsigned int W, unsigned int H>
+bool RushHour::Board<W,H>::add(const Block & block)
 {
-	if (num_vehicule < this->vehicules.size()) {
-		this->vehicules[num_vehicule].position.m_x += (1 - this->vehicules[num_vehicule].axis) * mvt;
-		this->vehicules[num_vehicule].position.m_y += this->vehicules[num_vehicule].axis * mvt;
+	m_aBlocks[m_iCount] = block;
+	++m_iCount;
+}
+
+/**
+ * @brief Move a block
+ */
+template<unsigned int W, unsigned int H>
+void RushHour::Board<W,H>::move(int mvt, unsigned int index)
+{
+	if (index < m_iCount)
+	{
+		m_aBlocks[index].setX(m_aBlocks[index].getX() + (1 - int(m_aBlocks[index].getAxis())) * mvt);
+		m_aBlocks[index].setY(m_aBlocks[index].getY() + int(m_aBlocks[index].getAxis()) * mvt);
 	}
 }
 
 /**
- * Return a matrix representing board occupation
+ * @brief Return a matrix representing board occupation
  */
-void CGameBoard::get_parking_occupation(int *tableau)
+template<unsigned int W, unsigned int H>
+void RushHour::Board<W,H>::get_parking_occupation(int * tableau)
 {
-	for (int i = 0; i < HEIGHT * WIDTH; i++)
+	for (int i = 0; i < W * H; i++)
 	{
 		tableau[i] = 0;
 	}
 
-	for (unsigned int i = 0; i < this->vehicules.size(); i++)
+	for (unsigned int i = 0; i < m_iCount; i++)
 	{
 		// numerotation de la case reference.
-		tableau[this->vehicules[i].position.m_y * 6 + this->vehicules[i].position.m_x] = 1+i;
+		tableau[m_aBlocks[i].getY() * 6 + m_aBlocks[i].getX()] = 1+i;
 		// numerotation de la case suivante en fonction de l'axe
-		tableau[(this->vehicules[i].position.m_y + this->vehicules[i].axis)*6 + this->vehicules[i].position.m_x + 1 - this->vehicules[i].axis] = 1+i;
+		tableau[(m_aBlocks[i].getY() + int(m_aBlocks[i].getAxis()))*6 + m_aBlocks[i].getX() + 1 - int(m_aBlocks[i].getAxis())] = 1+i;
 		// numerotation de la case suivante OU de la 2e case qui suit en fonction de la taille
-		tableau[(this->vehicules[i].position.m_y + (this->vehicules[i].size-1)*this->vehicules[i].axis)*6+this->vehicules[i].position.m_x+(this->vehicules[i].size-1)*(1-this->vehicules[i].axis)] = 1+i;
+		tableau[(m_aBlocks[i].getY() + (m_aBlocks[i].getSize()-1)*int(m_aBlocks[i].getAxis()))*6+m_aBlocks[i].getX()+(m_aBlocks[i].getSize()-1)*(1-int(m_aBlocks[i].getAxis()))] = 1+i;
 	}
 }
 
 /**
  *  Return wether a move is impossible
  */
-bool CGameBoard::is_move_impossible(int mvt, unsigned int num_vehicule)
+template<unsigned int W, unsigned int H>
+bool RushHour::Board<W,H>::is_move_impossible(int mvt, unsigned int num_vehicule)
 {
-	int cases_occ[HEIGHT * WIDTH];
+	assert(num_vehicule < m_iCount);
 
-	this->get_parking_occupation(cases_occ);
+	int cases_occ[W * H];
+
+	get_parking_occupation(cases_occ);
 
 	int newAbs;
 	int newOrd;
-	int largeur = (this->vehicules[num_vehicule].size-1) * (1 - this->vehicules[num_vehicule].axis); // largeur
-	int hauteur = (this->vehicules[num_vehicule].size-1) * this->vehicules[num_vehicule].axis; // hauteur
+	int largeur = (m_aBlocks[num_vehicule].getSize()-1) * (1 - m_aBlocks[num_vehicule].getAxis()); // largeur
+	int hauteur = (m_aBlocks[num_vehicule].getSize()-1) * m_aBlocks[num_vehicule].getAxis(); // hauteur
 
 	if(mvt != -1 && mvt != 1)
 	{
@@ -100,11 +122,11 @@ bool CGameBoard::is_move_impossible(int mvt, unsigned int num_vehicule)
 	}
 
 	if (mvt == 1) { // 1 : droite ou bas
-		newAbs = this->vehicules[num_vehicule].position.m_x + (1 - this->vehicules[num_vehicule].axis); // horizontal
-		newOrd = this->vehicules[num_vehicule].position.m_y + this->vehicules[num_vehicule].axis; // vertical
+		newAbs = m_aBlocks[num_vehicule].getX() + (1 - m_aBlocks[num_vehicule].getAxis()); // horizontal
+		newOrd = m_aBlocks[num_vehicule].getY() + m_aBlocks[num_vehicule].getAxis(); // vertical
 	} else { // -1 : gauche ou haut
-		newAbs = this->vehicules[num_vehicule].position.m_x - (1 - this->vehicules[num_vehicule].axis); // horizontal
-		newOrd = this->vehicules[num_vehicule].position.m_y - this->vehicules[num_vehicule].axis; // vertical
+		newAbs = m_aBlocks[num_vehicule].getX() - (1 - m_aBlocks[num_vehicule].getAxis()); // horizontal
+		newOrd = m_aBlocks[num_vehicule].getY() - m_aBlocks[num_vehicule].getAxis(); // vertical
 	}
 
 	//Autorisation de sortie du parking
@@ -134,13 +156,97 @@ bool CGameBoard::is_move_impossible(int mvt, unsigned int num_vehicule)
 	return false;
 }
 
+/**
+ * @brief RushHour::Board<W, H>::getMaxNegativeMove
+ * @param index
+ * @return
+ */
+template<unsigned int W, unsigned int H>
+unsigned int RushHour::Board<W,H>::getMaxNegativeMove(unsigned int index)
+{
+	assert(index < m_iCount);
+
+	int cases_occ[W * H];
+	get_parking_occupation(cases_occ);
+
+	// Get Axis
+	int axis = m_aBlocks[index].getAxis();
+
+	// Top Left Position
+	unsigned int x = m_aBlocks[index].getX();
+	unsigned int y = m_aBlocks[index].getY();
+
+	// Compute max move before going out
+	unsigned int max = (Block::e_axis_horizontal == axis) ? x : y;
+
+	// Check all move are possible
+	for (unsigned int i = 1; i <= max; ++i)
+	{
+		unsigned int new_x = x - ((Block::e_axis_horizontal == axis) ? i : 0);
+		unsigned int new_y = y - ((Block::e_axis_horizontal == axis) ? 0 : i);
+
+		if (0 != cases_occ[new_y * W + new_x])
+		{
+			return(i-1);
+		}
+	}
+
+	return(max);
+}
+
+/**
+ * @brief RushHour::Board<W, H>::getMaxPositiveMove
+ * @param index
+ * @return
+ */
+template<unsigned int W, unsigned int H>
+unsigned int RushHour::Board<W,H>::getMaxPositiveMove(unsigned int index)
+{
+	assert(index < m_iCount);
+
+	int cases_occ[W * H];
+	get_parking_occupation(cases_occ);
+
+	// Get Axis
+	int axis = m_aBlocks[index].getAxis();
+
+	// Bottom Right Position
+	unsigned int x = m_aBlocks[index].getX() + (m_aBlocks[index].getSize() - 1) * (1 - axis);
+	unsigned int y = m_aBlocks[index].getY() + (m_aBlocks[index].getSize() - 1) * axis;
+
+	// Compute max move before going out
+	unsigned int max = (Block::e_axis_horizontal == axis) ? (5-x) : (5-y);
+
+	// special case : allow the main block to get out (victory)
+	if (0 == index)
+	{
+		++max;
+	}
+
+	// Check all move are possible
+	for (unsigned int i = 1; i <= max; ++i)
+	{
+		unsigned int new_x = x + ((Block::e_axis_horizontal == axis) ? i : 0);
+		unsigned int new_y = y + ((Block::e_axis_horizontal == axis) ? 0 : i);
+
+		if (new_x < W && new_y < H && 0 != cases_occ[new_y * W + new_x])
+		{
+			return(i-1);
+		}
+	}
+
+	return(max);
+}
+
+#if 0
 struct BoardAndPath
 {
 	CGameBoard config;
 	t_chemin chemin;
 };
 
-t_chemin CGameBoard::solution(void)
+template<unsigned int W, unsigned int H>
+t_chemin RushHour::Board<W,H>::solution(void)
 {
 	int nb_vehicules = this->vehicules.size();
 
@@ -265,3 +371,9 @@ t_chemin CGameBoard::solution(void)
 
 	return res;
 }
+#endif
+
+
+// Force instantiation
+template class RushHour::Board<6,6>;
+
