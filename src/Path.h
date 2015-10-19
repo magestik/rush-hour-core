@@ -1,5 +1,4 @@
-#ifndef __GAME_PATH_H__
-#define __GAME_PATH_H__
+#pragma once
 
 struct t_mouvement
 {
@@ -8,5 +7,3 @@ struct t_mouvement
 };
 
 typedef t_mouvement * t_chemin;
-
-#endif // __GAME_PATH_H__
