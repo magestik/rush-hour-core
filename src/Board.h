@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Block.h"
+#include "Path.h"
 
 namespace RushHour
 {
@@ -23,14 +24,12 @@ public:
 
 	void move(int mvt, unsigned int num_vehicule);
 
-	void get_parking_occupation(int * tableau);
+	unsigned int getMaxNegativeMove(unsigned int index) const;
+	unsigned int getMaxPositiveMove(unsigned int index) const;
 
-	bool is_move_impossible(int mvt, unsigned int num_vehicule);
+	bool isCompleted(void) const;
 
-	unsigned int getMaxNegativeMove(unsigned int index);
-	unsigned int getMaxPositiveMove(unsigned int index);
-
-	//t_chemin solution(void);
+	t_chemin solution(void) const;
 
 	Block & operator [] (unsigned int index)
 	{
@@ -47,11 +46,44 @@ public:
 		return(m_iCount);
 	}
 
-public:
+protected:
+
+	bool is_move_impossible(int mvt, unsigned int num_vehicule);
+
+	void get_parking_occupation(int * tableau) const;
+
+private:
 
 	Block m_aBlocks [MAX];
 	unsigned int m_iCount;
 
 };
 
+
+template<unsigned int W, unsigned int H>
+inline int compare(const RushHour::Board<W,H> & p1, const RushHour::Board<W,H> & p2)
+{
+	const unsigned int count1 = p1.getBlockCount();
+	const unsigned int count2 = p2.getBlockCount();
+	//assert(count1 == count2);
+
+	for (unsigned int i = 0; i < count1; ++i)
+	{
+		int diffX = p1[i].getX() - p2[i].getX();
+
+		if (0 != diffX)
+		{
+			return diffX;
+		}
+
+		int diffY = p1[i].getY() - p2[i].getY();
+
+		if (0 != diffY)
+		{
+			return diffY;
+		}
+	}
+
+	return 0;
+}
 }

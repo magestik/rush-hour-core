@@ -1,40 +1,10 @@
 #include "Board.h"
 
+#include <stdlib.h>
 #include <assert.h>
 
-/**
- * @brief Compares two boards
- * Compare deux plateaux selon un ordre défini (pour le BST)
- * retourne = 0 si ils sont identiques
- * retourne > 0 si le premier est supérieur
- * retourne < 0 si le deuxième est supérieur
- */
-template<unsigned int W, unsigned int H>
-static int compare(const RushHour::Board<W,H> & p1, const RushHour::Board<W,H> & p2)
-{
-	const unsigned int count1 = p1.getBlockCount();
-	const unsigned int count2 = p2.getBlockCount();
-	assert(count1 == count2);
-
-	for (unsigned int i = 0; i < count1; ++i)
-	{
-		int diffX = p1[i].getX() - p2[i].getX();
-
-		if (0 != diffX)
-		{
-			return diffX;
-		}
-
-		int diffY = p1[i].getY() - p2[i].getY();
-
-		if (0 != diffY)
-		{
-			return diffY;
-		}
-	}
-
-	return 0;
-}
+#include <BinarySearchTree.h>
+#include <Queue.h>
 
 /**
  * @brief Constructor
@@ -81,7 +51,7 @@ void RushHour::Board<W,H>::move(int mvt, unsigned int index)
  * @brief Return a matrix representing board occupation
  */
 template<unsigned int W, unsigned int H>
-void RushHour::Board<W,H>::get_parking_occupation(int * tableau)
+void RushHour::Board<W,H>::get_parking_occupation(int * tableau) const
 {
 	for (int i = 0; i < W * H; i++)
 	{
@@ -162,7 +132,7 @@ bool RushHour::Board<W,H>::is_move_impossible(int mvt, unsigned int num_vehicule
  * @return
  */
 template<unsigned int W, unsigned int H>
-unsigned int RushHour::Board<W,H>::getMaxNegativeMove(unsigned int index)
+unsigned int RushHour::Board<W,H>::getMaxNegativeMove(unsigned int index) const
 {
 	assert(index < m_iCount);
 
@@ -200,7 +170,7 @@ unsigned int RushHour::Board<W,H>::getMaxNegativeMove(unsigned int index)
  * @return
  */
 template<unsigned int W, unsigned int H>
-unsigned int RushHour::Board<W,H>::getMaxPositiveMove(unsigned int index)
+unsigned int RushHour::Board<W,H>::getMaxPositiveMove(unsigned int index) const
 {
 	assert(index < m_iCount);
 
@@ -238,20 +208,27 @@ unsigned int RushHour::Board<W,H>::getMaxPositiveMove(unsigned int index)
 	return(max);
 }
 
-#if 0
+/**
+ * @brief RushHour::Board<W, H>::isCompleted
+ * @return
+ */
+template<unsigned int W, unsigned int H>
+bool RushHour::Board<W,H>::isCompleted(void) const
+{
+	return(5 == m_aBlocks[0].getX());
+}
+
 struct BoardAndPath
 {
-	CGameBoard config;
-	t_chemin chemin;
+	RushHour::Board<6,6> config;
+	RushHour::t_chemin chemin;
 };
 
 template<unsigned int W, unsigned int H>
-t_chemin RushHour::Board<W,H>::solution(void)
+RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
 {
-	int nb_vehicules = this->vehicules.size();
-
 	// Search Containers
-	BinarySearchTree<CGameBoard> arbre;
+	BinarySearchTree<Board> arbre;
 	Queue<BoardAndPath> file;
 
 	// Insert first node
@@ -273,17 +250,17 @@ t_chemin RushHour::Board<W,H>::solution(void)
 	// Resolution
 	do
 	{
-		for (int i = 0; i < nb_vehicules && continuer; i++)
+		for (int i = 0; i < m_iCount && continuer; i++)
 		{
 			for (int j = 0; j < 2 && continuer; j++)
 			{
 				const BoardAndPath & first = file.first();
-				CGameBoard	CurrentConfig	= first.config;
+				Board	CurrentConfig	= first.config;
 				t_chemin	CurrentPath		= first.chemin;
 
 				if (!CurrentConfig.is_move_impossible(2*j-1, i)) // mouvement possible
 				{
-					if (i == 0 && j == 1 && CurrentConfig.vehicules[0].position.m_x+1 == 5 && CurrentConfig.vehicules[0].position.m_y == 2 )
+					if (i == 0 && j == 1 && CurrentConfig.m_aBlocks[0].getX()+1 == 5 && CurrentConfig.m_aBlocks[0].getY() == 2 )
 					{
 						continuer = false; // victoire (fin condition sortie boucle while)
 					}
@@ -371,8 +348,6 @@ t_chemin RushHour::Board<W,H>::solution(void)
 
 	return res;
 }
-#endif
-
 
 // Force instantiation
 template class RushHour::Board<6,6>;
