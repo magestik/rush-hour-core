@@ -48,6 +48,8 @@ public:
 		bits = (bits & 0x1F) | ((pos & 0x7) << 5); // 0x1F = 0b00011111
 	}
 
+	bool intersects(const Block & block) const;
+
 private:
 
 	// bit 0   : axis

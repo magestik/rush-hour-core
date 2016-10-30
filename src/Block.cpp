@@ -34,3 +34,68 @@ RushHour::Block::~Block(void)
 {
 	// ...
 }
+
+/**
+ * @brief RushHour::Block::intersects
+ * @param block
+ * @return
+ */
+bool RushHour::Block::intersects(const Block & block) const
+{
+	if (block.getAxis() == getAxis())
+	{
+		if (e_axis_horizontal == block.getAxis())
+		{
+			if (block.getY() != getY())
+			{
+				return(false);
+			}
+
+			if (block.getX() < getX())
+			{
+				return((block.getX() + block.getSize() - 1) >= getX());
+			}
+			else
+			{
+				return((getX() + getSize() - 1) >= block.getX());
+			}
+		}
+		else // e_axis_vertical == block.getAxis()
+		{
+			if (block.getX() != getX())
+			{
+				return(false);
+			}
+
+			if (block.getY() < getY())
+			{
+				return((block.getY() + block.getSize() - 1) >= getY());
+			}
+			else
+			{
+				return((getY() + getSize() - 1) >= block.getY());
+			}
+		}
+	}
+	else
+	{
+		if (e_axis_horizontal == block.getAxis())
+		{
+			unsigned int X1 = block.getX();
+			unsigned int X2 = block.getX() + block.getSize() -1;
+			unsigned int Y1 = this->getY();
+			unsigned int Y2 = this->getY() + this->getSize() - 1;
+			return(X1 <= this->getX() && X2 >= this->getX() && Y1 <= block.getY() && Y2 >= block.getY());
+		}
+		else
+		{
+			unsigned int X1 = this->getX(); // 2
+			unsigned int X2 = this->getX() + this->getSize() - 1; // 3
+			unsigned int Y1 = block.getY(); // 0
+			unsigned int Y2 = block.getY() + block.getSize() - 1; // 1
+			return(X1 <= block.getX() && X2 >= block.getX() && Y1 <= this->getY() && Y2 >= this->getY());
+		}
+	}
+
+	return(false); // unreachable
+}

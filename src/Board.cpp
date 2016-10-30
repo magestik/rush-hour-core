@@ -30,8 +30,23 @@ RushHour::Board<W,H>::~Board(void)
 template<unsigned int W, unsigned int H>
 bool RushHour::Board<W,H>::add(const Block & block)
 {
+	assert(m_iCount < MAX);
+
+	//
+	// check if we can add the block
+	for (int i = 0; i < m_iCount; ++i)
+	{
+		if (m_aBlocks[i].intersects(block))
+		{
+			return(false);
+		}
+	}
+
+	// add the block
 	m_aBlocks[m_iCount] = block;
 	++m_iCount;
+
+	return(true);
 }
 
 /**

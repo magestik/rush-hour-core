@@ -86,4 +86,5 @@ inline int compare(const RushHour::Board<W,H> & p1, const RushHour::Board<W,H> &
 
 	return 0;
 }
+
 }
