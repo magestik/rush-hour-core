@@ -256,7 +256,7 @@ RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
 	file.enqueue(BP);
 
 	// Insert current configuration in the tree
-	arbre.add(*this);
+	arbre.insert(*this);
 
 	// ...
 	t_chemin res;
@@ -285,7 +285,7 @@ RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
 					}
 				}
 
-				bool nouveau = arbre.add(CurrentConfig); //ajout(&arbre, aux->suivant->config);
+				bool nouveau = arbre.insert(CurrentConfig); //ajout(&arbre, aux->suivant->config);
 
 				// n'existe pas déjà dans l'arbre
 				if (nouveau && continuer)
