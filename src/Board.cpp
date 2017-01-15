@@ -6,6 +6,18 @@
 #include <BinarySearchTree.h>
 #include <Queue.h>
 
+struct BoardAndPath
+{
+	RushHour::Board<6,6> config;
+	RushHour::t_chemin chemin;
+};
+
+struct BoardAndDistance
+{
+	RushHour::Board<6,6> board;
+	unsigned int distance;
+};
+
 /**
  * @brief Constructor
  */
@@ -233,11 +245,98 @@ bool RushHour::Board<W,H>::isCompleted(void) const
 	return(5 == m_aBlocks[0].getX());
 }
 
-struct BoardAndPath
+template<unsigned int W, unsigned int H>
+unsigned int RushHour::Board<W,H>::getHardestConfiguration(Board<W, H> & hardestConfig) const
 {
-	RushHour::Board<6,6> config;
-	RushHour::t_chemin chemin;
-};
+	// Search Containers
+	BinarySearchTree<Board> tree;
+	Queue<BoardAndDistance> queue;
+
+	unsigned int max_distance = 0;
+
+	//
+	// Insert first node
+	{
+		BoardAndDistance BD;
+		BD.board = *this;
+		BD.distance = 0;
+
+		queue.enqueue(BD);
+
+		assert(BD.distance == max_distance);
+		max_distance = BD.distance;
+		hardestConfig = *this;
+	}
+
+	// Insert current configuration in the tree
+	tree.insert(*this);
+
+	do
+	{
+		const BoardAndDistance & first = queue.first();
+
+		const Board<W, H> & board = first.board;
+		const unsigned int distance = first.distance;
+
+		for (int i = 0; i < m_iCount; i++) // for each block
+		{
+			//
+			//
+			const unsigned int negative = board.getMaxNegativeMove(i);
+
+			if (negative >= 1)
+			{
+				Board<W, H> newBoard = board;
+				newBoard.move(-1, i);
+
+				bool added = tree.insert(newBoard);
+
+				if (added)
+				{
+					BoardAndDistance BD;
+					BD.board = newBoard;
+					BD.distance = distance + 1;
+
+					queue.enqueue(BD);
+
+					assert(BD.distance >= max_distance);
+					max_distance = BD.distance;
+					hardestConfig = newBoard;
+				}
+			}
+
+			//
+			//
+			const unsigned int positive = board.getMaxPositiveMove(i);
+
+			if (positive >= 1)
+			{
+				Board<W, H> newBoard = board;
+				newBoard.move(+1, i);
+
+				bool added = tree.insert(newBoard);
+
+				if (added)
+				{
+					BoardAndDistance BD;
+					BD.board = newBoard;
+					BD.distance = distance + 1;
+
+					queue.enqueue(BD);
+
+					assert(BD.distance >= max_distance);
+					max_distance = BD.distance;
+					hardestConfig = newBoard;
+				}
+			}
+		}
+
+		queue.dequeue();
+
+	} while (queue.count() > 0);
+
+	return(max_distance);
+}
 
 template<unsigned int W, unsigned int H>
 RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
@@ -250,7 +349,7 @@ RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
 	BoardAndPath BP;
 	BP.chemin = (t_mouvement *)malloc(sizeof(t_mouvement));
 	BP.chemin->voiture = -1;
-	BP.chemin->deplacement = 0; // to distinguish initialisation from the end of a path
+	BP.chemin->deplacement = 0; // to distinguish initialization from the end of a path
 	BP.config = *this;
 
 	file.enqueue(BP);

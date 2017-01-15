@@ -29,6 +29,8 @@ public:
 
 	bool isCompleted(void) const;
 
+	unsigned int getHardestConfiguration(Board<W, H> & hardestConfig) const;
+
 	t_chemin solution(void) const;
 
 	Block & operator [] (unsigned int index)
