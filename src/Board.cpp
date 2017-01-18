@@ -8,8 +8,18 @@
 
 struct BoardAndPath
 {
-	RushHour::Board<6,6> config;
-	RushHour::t_chemin chemin;
+	BoardAndPath(void) : board(), path()
+	{
+
+	}
+
+	BoardAndPath(const RushHour::Board<6,6> & newBoard, const RushHour::Path & newPath) : board(newBoard), path(newPath)
+	{
+
+	}
+
+	RushHour::Board<6,6> board;
+	RushHour::Path path;
 };
 
 struct BoardAndDistance
@@ -245,38 +255,28 @@ bool RushHour::Board<W,H>::isCompleted(void) const
 	return(5 == m_aBlocks[0].getX());
 }
 
+/**
+ * @brief RushHour::Board<W, H>::getHardestConfiguration
+ * @return
+ */
 template<unsigned int W, unsigned int H>
 unsigned int RushHour::Board<W,H>::getHardestConfiguration(Board<W, H> & hardestConfig) const
 {
 	// Search Containers
-	BinarySearchTree<Board> tree;
-	Queue<BoardAndDistance> queue;
-
-	unsigned int max_distance = 0;
+	BinarySearchTree<Board> tree; // used to know which configuration has already been tested
+	Queue<Board> queue; // used to track configuration to be tested
 
 	//
 	// Insert first node
-	{
-		BoardAndDistance BD;
-		BD.board = *this;
-		BD.distance = 0;
-
-		queue.enqueue(BD);
-
-		assert(BD.distance == max_distance);
-		max_distance = BD.distance;
-		hardestConfig = *this;
-	}
-
-	// Insert current configuration in the tree
 	tree.insert(*this);
+	queue.enqueue(*this);
 
-	do
+	unsigned int max_distance = computeDistanceToSolution();
+	hardestConfig = *this;
+
+	while (!queue.empty())
 	{
-		const BoardAndDistance & first = queue.first();
-
-		const Board<W, H> & board = first.board;
-		const unsigned int distance = first.distance;
+		const Board<W, H> & board = queue.first();
 
 		for (int i = 0; i < m_iCount; i++) // for each block
 		{
@@ -293,15 +293,15 @@ unsigned int RushHour::Board<W,H>::getHardestConfiguration(Board<W, H> & hardest
 
 				if (added)
 				{
-					BoardAndDistance BD;
-					BD.board = newBoard;
-					BD.distance = distance + 1;
+					unsigned int distance = newBoard.computeDistanceToSolution();
 
-					queue.enqueue(BD);
+					queue.enqueue(newBoard);
 
-					assert(BD.distance >= max_distance);
-					max_distance = BD.distance;
-					hardestConfig = newBoard;
+					if (distance > max_distance)
+					{
+						max_distance = distance;
+						hardestConfig = newBoard;
+					}
 				}
 			}
 
@@ -318,149 +318,133 @@ unsigned int RushHour::Board<W,H>::getHardestConfiguration(Board<W, H> & hardest
 
 				if (added)
 				{
-					BoardAndDistance BD;
-					BD.board = newBoard;
-					BD.distance = distance + 1;
+					unsigned int distance = newBoard.computeDistanceToSolution();
 
-					queue.enqueue(BD);
+					queue.enqueue(newBoard);
 
-					assert(BD.distance >= max_distance);
-					max_distance = BD.distance;
-					hardestConfig = newBoard;
+					if (distance > max_distance)
+					{
+						max_distance = distance;
+						hardestConfig = newBoard;
+					}
 				}
 			}
 		}
 
 		queue.dequeue();
-
-	} while (queue.count() > 0);
+	}
 
 	return(max_distance);
 }
 
+/**
+ * @brief RushHour::Board<W, H>::getPathToSolution
+ * @return
+ */
 template<unsigned int W, unsigned int H>
-RushHour::t_chemin RushHour::Board<W,H>::solution(void) const
+bool RushHour::Board<W,H>::getPathToSolution(RushHour::Path & outputPath) const
 {
+	if (isCompleted())
+	{
+		return(0);
+	}
+
 	// Search Containers
-	BinarySearchTree<Board> arbre;
-	Queue<BoardAndPath> file;
+	BinarySearchTree<Board> tree;
+	Queue<BoardAndPath> queue;
 
-	// Insert first node
-	BoardAndPath BP;
-	BP.chemin = (t_mouvement *)malloc(sizeof(t_mouvement));
-	BP.chemin->voiture = -1;
-	BP.chemin->deplacement = 0; // to distinguish initialization from the end of a path
-	BP.config = *this;
-
-	file.enqueue(BP);
+	// insert initial node
+	{
+		BoardAndPath BP;
+		BP.board = *this;
+		queue.enqueue(BP);
+	}
 
 	// Insert current configuration in the tree
-	arbre.insert(*this);
-
-	// ...
-	t_chemin res;
-	bool continuer = true;
+	tree.insert(*this);
 
 	// Resolution
-	do
+	while (!queue.empty())
 	{
-		for (int i = 0; i < m_iCount && continuer; i++)
-		{
-			for (int j = 0; j < 2 && continuer; j++)
-			{
-				const BoardAndPath & first = file.first();
-				Board	CurrentConfig	= first.config;
-				t_chemin	CurrentPath		= first.chemin;
+		const BoardAndPath & first = queue.first();
 
-				if (!CurrentConfig.is_move_impossible(2*j-1, i)) // mouvement possible
+		for (int i = 0; i < m_iCount; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				Board			CurrentBoard	= first.board;
+				const Path &	CurrentPath		= first.path;
+
+				if (!CurrentBoard.is_move_impossible(2*j-1, i))
 				{
-					if (i == 0 && j == 1 && CurrentConfig.m_aBlocks[0].getX()+1 == 5 && CurrentConfig.m_aBlocks[0].getY() == 2 )
+					CurrentBoard.move(2*j-1, i);
+
+					if (!CurrentBoard.isCompleted())
 					{
-						continuer = false; // victoire (fin condition sortie boucle while)
+						bool added = tree.insert(CurrentBoard);
+
+						if (added)
+						{
+							const int length = CurrentPath.getCount();
+
+							BoardAndPath BP;
+
+							BP.board = CurrentBoard;
+
+							BP.path.setCount(length + 1);
+
+							for (int k = 0; k < length; ++k)
+							{
+								BP.path.setMove(k, CurrentPath.getMove(k));
+							}
+
+							BP.path.setMove(length, Move(i,j));
+
+							queue.enqueue(BP);
+						}
 					}
 					else
 					{
-						CurrentConfig.move(2*j-1, i); // mouvement
+						const int length = CurrentPath.getCount();
+
+						outputPath.setCount(length + 1);
+
+						for (int k = 0; k < length; ++k)
+						{
+							outputPath.setMove(k, CurrentPath.getMove(k));
+						}
+
+						outputPath.setMove(length, Move(i,j));
+
+						return(true);
 					}
 				}
-
-				bool nouveau = arbre.insert(CurrentConfig); //ajout(&arbre, aux->suivant->config);
-
-				// n'existe pas déjà dans l'arbre
-				if (nouveau && continuer)
-				{
-					/* Compte la longueur du chemin */
-
-					int l = 0; // longueur reelle du chemin
-
-					while (!(CurrentPath[l].voiture == -1))
-					{
-						++l;
-					} //RMQ : ici je ne teste que voiture pour garder l=0 si on est ds le 1er cas.
-
-
-					/* Création d'un nouveau noeud */
-
-					BoardAndPath BP;
-
-					BP.config = CurrentConfig;
-
-					BP.chemin = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); // longueur actuelle + ajout (1,-1)
-
-					// Copie du chemin precedent
-					for (int k = 0; k < l; k++)
-					{
-						BP.chemin[k].voiture = CurrentPath[k].voiture;
-						BP.chemin[k].deplacement = CurrentPath[k].deplacement;
-					}
-
-					//ajout du nouveau deplacement
-					BP.chemin[l].voiture = i;
-					BP.chemin[l].deplacement = j;
-
-					BP.chemin[l+1].voiture = -1;
-					BP.chemin[l+1].deplacement = -1;
-
-					file.enqueue(BP);
-				}
-
-				// Victoire
-				if (!continuer)
-				{
-					int l = 0; // longueur reelle du chemin
-
-					while (!(CurrentPath[l].voiture == -1))
-					{
-						++l;
-					} //RMQ : ici je ne teste que voiture pour garder l=0 si on est ds le 1er cas.
-
-					res = (t_mouvement *)malloc(sizeof(t_mouvement)*(l+2)); // longueur actuelle + ajout (1,-1)
-
-					// Copie du chemin precedent
-					for (int k = 0; k < l; k++)
-					{
-						res[k].voiture = CurrentPath[k].voiture;
-						res[k].deplacement = CurrentPath[k].deplacement;
-					}
-
-					//ajout du nouveau deplacement
-					res[l].voiture = i;
-					res[l].deplacement = j;
-
-					res[l+1].voiture = -1;
-					res[l+1].deplacement = -1;
-				}
-			} // Fin boucle j
-		} // Fin boucle i
-
-		if (continuer)
-		{
-			file.dequeue();
+			}
 		}
 
-	} while (continuer);
+		queue.dequeue();
+	}
 
-	return res;
+	return(false);
+}
+
+/**
+ * @brief RushHour::Board<W, H>::computeDistanceToSolution
+ * @return
+ */
+template<unsigned int W, unsigned int H>
+unsigned int RushHour::Board<W,H>::computeDistanceToSolution(void) const
+{
+	RushHour::Path pathToSolution;
+
+	bool found = getPathToSolution(pathToSolution);
+
+	if (!found)
+	{
+		return(0); // ???
+	}
+
+	return(pathToSolution.getCount());
 }
 
 // Force instantiation

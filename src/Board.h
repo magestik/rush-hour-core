@@ -30,8 +30,8 @@ public:
 	bool isCompleted(void) const;
 
 	unsigned int getHardestConfiguration(Board<W, H> & hardestConfig) const;
-
-	t_chemin solution(void) const;
+	bool getPathToSolution(Path & path) const;
+	unsigned int computeDistanceToSolution(void) const;
 
 	Block & operator [] (unsigned int index)
 	{
